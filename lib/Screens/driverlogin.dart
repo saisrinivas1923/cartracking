@@ -67,7 +67,7 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
       child: Scaffold(
         body: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient:isDarkMode ? null : LinearGradient(
               colors: [Colors.orange.shade300, Colors.orange.shade900],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,

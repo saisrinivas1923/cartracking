@@ -1,10 +1,13 @@
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:lottie/lottie.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -15,15 +18,12 @@ import '../Services/localization_helper.dart';
 import '../Providers/CommonProvider.dart';
 import '../Services/authState.dart';
 import '../Providers/LocalizationProvider.dart';
-import '../Services/backgroundService.dart';
-import '../Services/notification_service.dart';
-import 'Providers/CarLocationProvider.dart';
+import '../Providers/CarLocationProvider.dart';
+import '../Services/background_service.dart';
+import '../Constants/urls.dart';
+import '../Providers/runningCarsProvider.dart';
+import '../Services/runningCarsApiService.dart';
 import 'firebase_options.dart';
-
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Handle background notifications
-  debugPrint("Handling a background message: ${message.messageId}");
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +31,6 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
@@ -47,13 +46,16 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => MapState(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => Runningcarsprovider(apiService: Runningcarsapiservice(apiBaseUrl: apiBaseUrl)),
+        ),
       ],
-      child: const BusTrackingApp(),
+      child: BusTrackingApp(),
     ),
   );
-
-  await NotificationService.instance.initialize();
-  await requestPermissions();
+  if (Platform.isAndroid || Platform.isIOS) {
+    await Permission.location.request();
+  }
   await initializeService();
 }
 
@@ -81,18 +83,18 @@ class BusTrackingApp extends StatelessWidget {
           brightness: Brightness.light,
           textTheme: const TextTheme(
             bodyMedium:
-            TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
           ),
         ),
         darkTheme: ThemeData(
           brightness: Brightness.dark,
           textTheme: const TextTheme(
             bodyLarge:
-            TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
         themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-        title: 'Bus Tracking App',
+        title: 'Car Tracking App',
         home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
       );
@@ -111,22 +113,10 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
-  void askNotificationPermission() async {
-    // Subscribe to topic "all"
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    await messaging.subscribeToTopic("all");
-    debugPrint("Subscribed to topic all");
-  }
-
   @override
   void initState() {
     super.initState();
-    askNotificationPermission();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 4),
-      vsync: this,
-    )..forward();
-
+    _controller = AnimationController(vsync: this,);
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Navigator.of(context).pushReplacement(
@@ -148,32 +138,21 @@ class _SplashScreenState extends State<SplashScreen>
       body: Stack(
         children: [
           // Background gradient
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.deepOrangeAccent,
-                  Colors.orange.shade100,
-                  Colors.deepOrange
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
+          Container(color: Colors.white),
           // Bus animation
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return const Center(
-                child: Image(
-                  image: AssetImage('assets/bus1.gif'),
-                  width: double.infinity / 1.8,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                ),
-              );
-            },
+          Center(
+            child: Lottie.asset('assets/WdSD52fBkE.json',
+                frameRate: FrameRate.max,
+                width: double.infinity / 1.8,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+              controller: _controller,
+              onLoaded: (composition){
+              _controller
+                  ..duration = Duration(seconds: 4)
+                  ..forward();
+              }
+            ),
           ),
           //App Name
           const Center(
@@ -184,7 +163,7 @@ class _SplashScreenState extends State<SplashScreen>
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  // color: Colors.white,
                 ),
               ),
             ),
@@ -206,11 +185,12 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final DateTime now = DateTime.now();
   final String appLink =
-      'https://play.google.com/store/apps/details?id=com.anistream';
+      'https://play.google.com/';
   final List<String> images = [
-    'assets/aditya.jpg', // Replace with your actual asset paths
-    'assets/aditya2.jpg',
-    'assets/track.jpg',
+    'assets/au.jpg',// Replace with your actual asset paths
+    'assets/aditya.jpg',
+    'assets/2.jpeg',
+    'assets/3.jpeg',
   ];
 
   @override
@@ -224,6 +204,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    //askNotificationPermission();
     final themeProvider = Provider.of<ThemeProvider>(context);
     final currentIndexProvider = Provider.of<CurrentIndexProvider>(context);
     final brightness = Theme.of(context).brightness;
@@ -239,13 +220,18 @@ class _HomePageState extends State<HomePage> {
               height: 270,
               width: double.infinity,
               //margin: EdgeInsets.only(left: 5, right: 5, top: 5),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.orange, Color.fromARGB(255, 255, 119, 110)],
+                  colors: isDarkMode == false
+                      ? [
+                          Colors.orange,
+                          const Color.fromARGB(255, 255, 119, 110)
+                        ]
+                      : [const Color.fromRGBO(83, 215, 238, 1), Colors.black],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(10),
                     bottomRight: Radius.circular(10)),
               ),
@@ -289,12 +275,18 @@ class _HomePageState extends State<HomePage> {
                   actions: [
                     IconButton(
                       icon: const Icon(
-                        Icons.help_outline,
+                        Icons.info_outline_rounded,
                         color: Colors.white,
-                        size: 25,
+                        size: 30,
                       ),
                       onPressed: () {
                         // Add help action here
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return PopupPage();
+                          },
+                        );
                       },
                     ),
                   ],
@@ -312,7 +304,9 @@ class _HomePageState extends State<HomePage> {
                     height: 230,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white),
+                      border: Border.all(
+                          color:
+                              isDarkMode ? Colors.transparent : Colors.white),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
@@ -343,11 +337,13 @@ class _HomePageState extends State<HomePage> {
                   AnimatedSmoothIndicator(
                     activeIndex: currentIndexProvider.currentIndex,
                     count: images.length,
-                    effect: const ExpandingDotsEffect(
+                    effect: ExpandingDotsEffect(
                       dotHeight: 8,
                       dotWidth: 8,
-                      activeDotColor: Colors.orange,
-                      dotColor: Color.fromARGB(255, 193, 186, 186),
+                      activeDotColor: isDarkMode
+                          ? const Color.fromRGBO(83, 215, 238, 1)
+                          : Colors.orange,
+                      dotColor: const Color.fromARGB(255, 193, 186, 186),
                     ),
                   ),
                 ],
@@ -373,6 +369,7 @@ class _HomePageState extends State<HomePage> {
                     Icons.directions_bus_sharp,
                     const DriverAuthState(),
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -380,18 +377,31 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       drawer: Drawer(
-        // Add your drawer content here
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
         child: ListView(
+          padding: EdgeInsets.zero, // Remove default padding
           children: <Widget>[
-            DrawerHeader(
-              padding: const EdgeInsets.only(
-                  top: 10, bottom: 10, left: 10, right: 20),
-              decoration: const BoxDecoration(
+            Container(
+              // This ensures it spans the top part
+              height: 150 + MediaQuery.of(context).padding.top,
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.orange, Colors.deepOrange],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  colors: isDarkMode
+                      ? [const Color.fromRGBO(83, 215, 238, 1), Colors.black]
+                      : [
+                          Colors.orange,
+                          const Color.fromARGB(255, 255, 119, 110)
+                        ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
+              ),
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top +
+                    10, // Adjust for status bar
+                bottom: 10,
+                left: 10,
+                right: 20,
               ),
               child: Column(
                 children: [
@@ -399,7 +409,8 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       const CircleAvatar(
                         radius: 50,
-                        backgroundImage: AssetImage('assets/adityalogo1.jpg'),
+                        backgroundColor: Colors.white,
+                        backgroundImage: AssetImage('assets/adityalogo.png'),
                       ),
                       const Spacer(),
                       Column(
@@ -436,6 +447,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
+            // Remaining drawer items
             ListTile(
               leading: const Icon(Icons.language),
               title: Text(LocalizationHelper.of(context).translate('language')),
@@ -444,7 +456,7 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.share),
               title:
-              Text(LocalizationHelper.of(context).translate('share_app')),
+                  Text(LocalizationHelper.of(context).translate('share_app')),
               onTap: () {
                 Share.share('Check out my app: $appLink',
                     subject: 'My Awesome App');
@@ -461,7 +473,6 @@ class _HomePageState extends State<HomePage> {
               ),
               title: Text(LocalizationHelper.of(context).translate('rate_us')),
               onTap: () {
-                // Handle drawer item tap
                 showRateUsDialog(context);
               },
             ),
@@ -470,7 +481,6 @@ class _HomePageState extends State<HomePage> {
               title: Text(
                   LocalizationHelper.of(context).translate('report_issue')),
               onTap: () {
-                // Handle drawer item tap
                 showReportIssueDialog(context);
               },
             ),
@@ -479,30 +489,29 @@ class _HomePageState extends State<HomePage> {
               title: Text(
                   LocalizationHelper.of(context).translate('suggest_feature')),
               onTap: () {
-                // Handle drawer item tap
                 showSuggestFeatureDialog(context);
               },
             ),
             ListTile(
-                leading: const Icon(Icons.color_lens),
-                title: Text(LocalizationHelper.of(context).translate(
-                    'appearance')), //Text(LocalizationHelper.of(context).translate('')),
-                trailing: Transform.scale(
-                  scale: 0.7,
-                  child: Switch(
-                    value: themeProvider.isDarkMode,
-                    onChanged: (value) {
-                      themeProvider.toggleTheme();
-                    },
-                    activeColor: Colors.white,
-                    trackOutlineColor: WidgetStateColor.transparent,
-                    inactiveThumbColor:
-                    Colors.white, // Thumb color when inactive
-                    inactiveTrackColor: Colors.grey.shade200,
-                    activeTrackColor: const Color.fromARGB(255, 255, 153, 0),
-                  ),
+              leading: const Icon(Icons.color_lens),
+              title:
+                  Text(LocalizationHelper.of(context).translate('appearance')),
+              trailing: Transform.scale(
+                scale: 0.7,
+                child: Switch(
+                  value: themeProvider.isDarkMode,
+                  onChanged: (value) {
+                    themeProvider.toggleTheme();
+                  },
+                  activeColor: Colors.white,
+                  trackOutlineColor: WidgetStateColor.transparent,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.grey.shade200,
+                  activeTrackColor: const Color.fromARGB(255, 255, 153, 0),
                 ),
-                onTap: () {})
+              ),
+              onTap: () {},
+            ),
           ],
         ),
       ),
@@ -516,7 +525,7 @@ class _HomePageState extends State<HomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title:
-          Text(LocalizationHelper.of(context).translate('choose_language')),
+              Text(LocalizationHelper.of(context).translate('choose_language')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -562,7 +571,10 @@ class _HomePageState extends State<HomePage> {
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Color.fromARGB(91, 0, 0, 0)),
+            side: BorderSide(
+                color: isDarkMode
+                    ? Colors.transparent
+                    : const Color.fromARGB(91, 0, 0, 0)),
             borderRadius: BorderRadius.circular(20)),
         child: Container(
           height: 80,
@@ -572,8 +584,9 @@ class _HomePageState extends State<HomePage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color:
-                isDarkMode ? Colors.white : Colors.black.withOpacity(0.2),
+                color: isDarkMode
+                    ? const Color.fromRGBO(83, 215, 238, 0.5)
+                    : Colors.black.withOpacity(0.2),
                 blurRadius: 8,
                 spreadRadius: 2,
               ),
@@ -594,7 +607,7 @@ class _HomePageState extends State<HomePage> {
                       color: const Color.fromARGB(255, 23, 72, 112),
                       borderRadius: BorderRadius.circular(30),
                       border:
-                      Border.all(color: const Color.fromARGB(110, 0, 0, 0)),
+                          Border.all(color: const Color.fromARGB(110, 0, 0, 0)),
                     ),
                     child: Icon(icon, size: 30, color: Colors.white),
                   ),
@@ -627,7 +640,6 @@ class _HomePageState extends State<HomePage> {
   void showRateUsDialog(BuildContext context) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     int savedRating = prefs.getInt('rating') ?? 0;
-
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -698,7 +710,7 @@ class _HomePageState extends State<HomePage> {
             maxLines: 4,
             decoration: InputDecoration(
               hintText:
-              '${LocalizationHelper.of(context).translate('report')}...',
+                  '${LocalizationHelper.of(context).translate('report')}...',
               border: const OutlineInputBorder(),
             ),
           ),
@@ -740,7 +752,7 @@ class _HomePageState extends State<HomePage> {
             maxLines: 4,
             decoration: InputDecoration(
               hintText:
-              '${LocalizationHelper.of(context).translate('suggest_feature')}...',
+                  '${LocalizationHelper.of(context).translate('suggest_feature')}...',
               border: const OutlineInputBorder(),
             ),
           ),
@@ -786,6 +798,80 @@ class _HomePageState extends State<HomePage> {
           ],
         );
       },
+    );
+  }
+}
+
+class PopupPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        height: 420, // Adjust the height as needed
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(
+              height: 10,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  width: 15,
+                ),
+                const Text(
+                  "Developed by",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                //Spacer(),
+              ],
+            ),
+            const SizedBox(height: 0.0),
+            const SizedBox(height: 10.0),
+            Expanded(
+              child: ListView(
+                children: const [
+                  ListTile(
+                    leading: CircleAvatar(child: Text("SS")),
+                    title: Text("SaiSrinivas"),
+                    subtitle: Text('Team Member'),
+                  ),
+                  ListTile(
+                    leading: CircleAvatar(child: Text("SR")),
+                    title: Text("SriRam Reddy S"),
+                    subtitle: Text('Team Member'),
+                  ),
+                  ListTile(
+                    leading: CircleAvatar(child: Text("VR")),
+                    title: Text("Vikas Reddy Mallidi"),
+                    subtitle: Text('Team Member'),
+                  ),
+                  ListTile(
+                    leading: CircleAvatar(child: Text("DR")),
+                    title: Text("Deekshith Reddi"),
+                    subtitle: Text('Team Member'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

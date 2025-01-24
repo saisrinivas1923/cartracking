@@ -1,3 +1,4 @@
+import 'package:car_tracking/Screens/admindashboard.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
@@ -40,13 +41,13 @@ class _AdminloginState extends State<Adminlogin> {
       // Save the token to the SharedPreferences for future use
       await AdminTokenStorage.saveToken(response['token']);
 
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      await messaging.subscribeToTopic("admin");
+      // FirebaseMessaging messaging = FirebaseMessaging.instance;
+      // await messaging.subscribeToTopic("admin");
       // Navigate to the DriverPage with the token
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const PlaceListPage(),
+          builder: (context) => Admindashboard(),
         ),
       );
       CustomWidget.showSnackBar("Login successful!", context);
@@ -71,7 +72,7 @@ class _AdminloginState extends State<Adminlogin> {
       child: Scaffold(
         body: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient:isDarkMode ? null : LinearGradient(
               colors: [Colors.orange.shade300, Colors.orange.shade900],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -121,8 +122,14 @@ class _AdminloginState extends State<Adminlogin> {
                           decoration: InputDecoration(
                             labelText:
                                 LocalizationHelper.of(context).translate('aid'),
-                                labelStyle: TextStyle(color: isDarkMode? Colors.orange : Colors.black54),
-                            prefixIcon: const Icon(Icons.email,color: Colors.black,),
+                            labelStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.orange
+                                    : Colors.black54),
+                            prefixIcon: const Icon(
+                              Icons.email,
+                              color: Colors.black,
+                            ),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -146,7 +153,10 @@ class _AdminloginState extends State<Adminlogin> {
                           decoration: InputDecoration(
                             labelText: LocalizationHelper.of(context)
                                 .translate('password'),
-                            labelStyle: TextStyle(color: isDarkMode? Colors.orange : Colors.black54),
+                            labelStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.orange
+                                    : Colors.black54),
                             prefixIcon: const Icon(
                               Icons.lock,
                               color: Colors.black,

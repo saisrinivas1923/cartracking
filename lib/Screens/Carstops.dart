@@ -170,17 +170,19 @@ class _CarManageStopsScreenState extends State<CarManageStopsScreen> {
     final brightness = Theme.of(context).brightness;
     final isDarkMode = brightness == Brightness.dark;
     return Scaffold(
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       appBar: PreferredSize(
-        preferredSize:
-        Size.fromHeight(MediaQuery.of(context).size.height * 0.13),
+        preferredSize: const Size.fromHeight(100),
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.orange, Color.fromARGB(255, 255, 119, 110)],
+              colors: isDarkMode == false
+                  ? [Colors.orange, const Color.fromARGB(255, 255, 119, 110)]
+                  : [const Color.fromRGBO(83, 215, 238, 1), Colors.black],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
             ),
@@ -224,75 +226,98 @@ class _CarManageStopsScreenState extends State<CarManageStopsScreen> {
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.orange,))
+          ? Center(
+              child: CircularProgressIndicator(
+              color: isDarkMode
+                  ? const Color.fromRGBO(83, 215, 238, 1)
+                  : Colors.orange,
+            ))
           : Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: ReorderableListView(
-                onReorder: (oldIndex, newIndex) {
-                  setState(() {
-                    if (newIndex > oldIndex) newIndex -= 1;
-                    final item = stops.removeAt(oldIndex);
-                    stops.insert(newIndex, item);
-                  });
-                  reorderStops();
-                },
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
                 children: [
-                  for (int index = 0; index < stops.length; index++)
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        side: isDarkMode ? const BorderSide(
-                          color: Colors.orange, // Darker color for border
-                        ) : BorderSide.none,
-                      ),
-                      key: ValueKey(stops[index]),
-                      elevation: 5, // Shadow for card
-                      shadowColor: isDarkMode ? Colors.orange : Colors.black,
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 6), // Space between cards
-                      child: ListTile(
-                        minTileHeight: 70,
-                        leading: const Icon(
-                          Icons.location_on_outlined,
-                          color: Colors.red,
-                          size: 25,
-                        ), // Same as before
-                        title: Text(
-                          stops[index],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: ReorderableListView(
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          if (newIndex > oldIndex) newIndex -= 1;
+                          final item = stops.removeAt(oldIndex);
+                          stops.insert(newIndex, item);
+                        });
+                        reorderStops();
+                      },
+                      children: [
+                        for (int index = 0; index < stops.length; index++)
+                          Card(
+                            color: isDarkMode ? Colors.black : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              side: isDarkMode
+                                  ? const BorderSide(
+                                      color: Color.fromRGBO(83, 215, 238, 1)
+                                      // Darker color for border
+                                      )
+                                  : BorderSide.none,
+                            ),
+                            key: ValueKey(stops[index]),
+                            elevation: 5, // Shadow for card
+                            shadowColor: isDarkMode
+                                ? const Color.fromRGBO(83, 215, 238, 1)
+                                : Colors.black,
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 6), // Space between cards
+                            child: ListTile(
+                              minTileHeight: 70,
+                              leading: const Icon(
+                                Icons.location_on_outlined,
+                                color: Colors.red,
+                                size: 25,
+                              ), // Same as before
+                              title: Text(
+                                stops[index],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete,
+                                    color: isDarkMode
+                                        ? Colors.red
+                                        : Colors
+                                            .blueGrey), // Updated delete icon color
+                                onPressed: () => removeStop(stops[index]),
+                              ),
+                            ),
                           ),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete,
-                              color: Colors
-                                  .blueGrey), // Updated delete icon color
-                          onPressed: () => removeStop(stops[index]),
-                        ),
-                      ),
+                      ],
                     ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: GestureDetector(
         onTap: _showAddStopDialog,
         child: Container(
           height: 50,
           width: 60,
-          decoration: const BoxDecoration(
-            color: Colors.black54, // Updated to match admin FAB color
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+          decoration: BoxDecoration(
+            color: isDarkMode
+                ? Colors.black87
+                : Colors.black54, // Updated to match admin FAB color
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            border: Border.all(
+              color: isDarkMode
+                  ? const Color.fromRGBO(83, 215, 238, 1)
+                  : Colors.white,
+            ),
           ),
-          child: const Center(
-              child:
-              Icon(Icons.add, color: Colors.white)), // Updated icon color
+          child: Center(
+            child: Icon(Icons.add,
+                color: isDarkMode
+                    ? const Color.fromRGBO(83, 215, 238, 1)
+                    : Colors.white),
+          ), // Updated icon color
         ),
       ),
     );
@@ -313,73 +338,123 @@ class AdminCarMapPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-              "${LocalizationHelper.of(context).translate('bl')}: $carNumber"),
-          actions: [
-            PopupMenuButton<MapProvider>(
-              onSelected: (provider) => mapState.updateProvider(provider),
-              itemBuilder: (context) {
-                return mapProviders.map((provider) {
-                  return PopupMenuItem(
-                    value: provider,
-                    child: Text(provider.name),
-                  );
-                }).toList();
+            "${LocalizationHelper.of(context).translate('Car Location')}: $carNumber",
+            textScaler: const TextScaler.linear(1),
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        body: Stack(
+          children: [
+            Consumer<CarsLocationProvider>(
+              builder: (context, provider, _) {
+                final carLocation = provider.carLocation;
+                return carLocation == null
+                    ? Center(
+                        child: CircularProgressIndicator(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Color.fromARGB(255, 38, 176, 235)
+                            : Colors.orange,
+                      ))
+                    : FlutterMap(
+                        mapController: _mapController,
+                        options: MapOptions(
+                          initialCenter: carLocation,
+                          initialZoom: 15.0,
+                          maxZoom: 18.4,
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: mapState.selectedProvider.urlTemplate,
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: carLocation,
+                                width: 50,
+                                height: 50,
+                                child: const Icon(
+                                  Icons.directions_car,
+                                  color: Colors.blue,
+                                  size: 25,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
               },
+            ),
+            Positioned(
+              bottom: 10,
+              right: 10,
+              child: Consumer<CarsLocationProvider>(
+                  builder: (context, provider, _) {
+                final busLocation = provider.carLocation;
+                return FloatingActionButton(
+                  onPressed: () {
+                    if (busLocation != null) {
+                      _mapController.move(busLocation, 15.0);
+                    } else {
+                      CustomWidget.showSnackBar(
+                          "Car location not available", context);
+                    }
+                  },
+                  child: const Icon(Icons.my_location),
+                );
+              }),
             ),
           ],
         ),
-        body: Consumer<CarsLocationProvider>(
-          builder: (context, provider, _) {
-            final carLocation = provider.carLocation;
-            return carLocation == null
-                ? const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.orange,
-                ))
-                : FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: carLocation,
-                initialZoom: 15.0,
-                maxZoom: 18.4,
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: mapState.selectedProvider.urlTemplate,
-                ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: carLocation,
-                      width: 50,
-                      height: 50,
-                      child: const Icon(
-                        Icons.directions_car,
-                        color: Colors.blue,
-                        size: 25,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+        floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(top: 80),
+          child: CircleAvatar(
+            child: IconButton(
+              icon: const Icon(Icons.layers),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (BuildContext context) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Select Map Style",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          ...mapProviders.map((provider) {
+                            return ListTile(
+                              leading: const Icon(Icons.map),
+                              title: Text(provider.name),
+                              onTap: () {
+                                mapState.updateProvider(provider);
+                                Navigator.pop(
+                                    context); // Close the bottom sheet
+                              },
+                            );
+                          }).toList(),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
         ),
-        floatingActionButton:
-        Consumer<CarsLocationProvider>(builder: (context, provider, _) {
-          final busLocation = provider.carLocation;
-          return FloatingActionButton(
-            onPressed: () {
-              if (busLocation != null) {
-                _mapController.move(busLocation, 15.0);
-              } else {
-                CustomWidget.showSnackBar(
-                    "Car location not available", context);
-              }
-            },
-            child: const Icon(Icons.my_location),
-          );
-        }),
       ),
     );
   }

@@ -1,5 +1,5 @@
 {
-    "title": "Where is My Bus",
+    "title": "Where is My Car",
     "subtitle": "By Aditya",
     "last_sync": "Last Sync",
     "language": "Language",
@@ -9,7 +9,7 @@
     "suggest_feature": "Suggest a Feature",
     "appearance": "Appearance",
      "choose_language": "Choose Language",
-     "maintitle": "Bus Tracking",
+     "maintitle": "Car Tracking",
      "admin": "Admin",
      "driver": "Driver",
      "Student": "Student",

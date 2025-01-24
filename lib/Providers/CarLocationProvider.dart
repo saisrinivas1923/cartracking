@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import '../Services/authState.dart';
 import '../constants/urls.dart';
 
-//car
 class CarLocationProvider with ChangeNotifier {
   final String carNumber;
   LatLng? _currentLocation;
@@ -60,7 +59,7 @@ class CarLocationProvider with ChangeNotifier {
       if (permissionStatus == PermissionStatus.deniedForever) {
         _isPermissionDeniedForever = true;
         errorMessage =
-        "Permission permanently denied. Please enable location in settings.";
+            "Permission permanently denied. Please enable location in settings.";
         notifyListeners();
         return;
       }
@@ -68,7 +67,7 @@ class CarLocationProvider with ChangeNotifier {
         if (!await _location.serviceEnabled()) {
           if (!await _location.requestService()) {
             errorMessage =
-            "Location services are disabled. Please enable them.";
+                "Location services are disabled. Please enable them.";
             _isPermissionGranted = false;
             notifyListeners();
             debugPrint("Location services are not enabled");
@@ -78,28 +77,31 @@ class CarLocationProvider with ChangeNotifier {
         _isPermissionGranted = true;
         errorMessage = null;
         notifyListeners();
+
+        await BusnoTokenStorage.saveToken(carNumber);
+        // Start the background service
         _locationSubscription =
             _location.onLocationChanged.listen((locationData) {
-              _currentLocation =
-                  LatLng(locationData.latitude!, locationData.longitude!);
-              debugPrint("Location: $_currentLocation");
-              // Store the current location on the server
-              // Check if sufficient time has passed since the last update
-              final now = DateTime.now();
-              if (_lastSentTime == null ||
-                  now.difference(_lastSentTime!) >= const Duration(seconds: 5)) {
-                _lastSentTime = now;
-                debugPrint("Last sent time: $_lastSentTime");
-                // Store the current location on the server
-                _storeCarData(
-                  carNumber,
-                  locationData.latitude!,
-                  locationData.longitude!,
-                  token,
-                );
-              }
-              notifyListeners();
-            });
+          _currentLocation =
+              LatLng(locationData.latitude!, locationData.longitude!);
+          debugPrint("Location: $_currentLocation");
+          // Store the current location on the server
+          // Check if sufficient time has passed since the last update
+          final now = DateTime.now();
+          if (_lastSentTime == null ||
+              now.difference(_lastSentTime!) >= const Duration(seconds: 5)) {
+            _lastSentTime = now;
+            debugPrint("Last sent time: $_lastSentTime");
+            // Store the current location on the server
+            // _storeCarData(
+            //   carNumber,
+            //   locationData.latitude!,
+            //   locationData.longitude!,
+            //   token,
+            // );
+          }
+          notifyListeners();
+        });
       }
     } catch (e) {
       errorMessage = "An unexpected error occurred: $e";
@@ -112,12 +114,10 @@ class CarLocationProvider with ChangeNotifier {
       debugPrint('Invalid token: Cannot stop location updates.');
       return;
     }
+    await BusnoTokenStorage.removeToken(carNumber);
     _locationSubscription?.cancel();
     _locationSubscription = null;
     notifyListeners();
-
-    // Stop the background service
-
     try {
       final response = await http.post(
         Uri.parse('$apiBaseUrl/stop-car-location'),
@@ -139,7 +139,7 @@ class CarLocationProvider with ChangeNotifier {
   }
 
   @override
-  void dispose() async{
+  void dispose() async {
     final token = await TokenStorage.getToken();
     _disposed = true;
     stopLocationUpdates(token);
@@ -189,7 +189,7 @@ final List<MapProvider> mapProviders = [
   MapProvider(
     name: 'Esri Satellite',
     urlTemplate:
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     subdomains: null,
   ),
 ];

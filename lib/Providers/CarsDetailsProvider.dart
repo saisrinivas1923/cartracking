@@ -40,7 +40,7 @@ class CarsLocationProvider extends ChangeNotifier {
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print(data);
+        debugPrint('=========== $data ===========');
         return LatLng(data['latitude'], data['longitude']);
       } else {
         debugPrint('Failed to retrieve car location: ${response.body}');
