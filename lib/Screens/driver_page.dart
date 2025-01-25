@@ -34,7 +34,6 @@ class _DriverPageState extends State<DriverPage> {
     'assets/mahindra Marazzo.jpg'
   ];
 
-  bool _isSharingcar = false;
   bool is_loading = false;
   bool isSelect = false;
   List<String> Cars = [];
@@ -129,10 +128,6 @@ class _DriverPageState extends State<DriverPage> {
       );
       return;
     }
-    setState(() {
-      _isSharingcar = true;
-    });
-
     // Simulate a delay for better user feedback
     await Future.delayed(const Duration(seconds: 1));
 
@@ -144,10 +139,6 @@ class _DriverPageState extends State<DriverPage> {
       ),
     ).then((_) async {
       FocusManager.instance.primaryFocus?.unfocus();
-      // Reset the sharing state when coming back
-      setState(() {
-        _isSharingcar = false;
-      });
     });
   }
 
@@ -619,7 +610,6 @@ class _CarMapView extends StatefulWidget {
 }
 
 class _CarMapViewState extends State<_CarMapView> {
-  double _currentSpeed = 0.0;
   late CarLocationProvider _provider;
   late String _token;
   final MapController _mapController = MapController();

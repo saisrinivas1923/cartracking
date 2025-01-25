@@ -8,7 +8,6 @@ import '../Constants/urls.dart';
 import '../Screens/adminlogin.dart';
 import '../Screens/driver_page.dart';
 import '../Screens/driverlogin.dart';
-import '../Screens/CarDisplay.dart';
 
 class ApiService {
   Future<Map<String, dynamic>> loginDriver(

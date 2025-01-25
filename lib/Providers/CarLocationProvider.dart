@@ -17,34 +17,12 @@ class CarLocationProvider with ChangeNotifier {
   bool _isPermissionDeniedForever = false;
   String? errorMessage;
   bool _disposed = false;
-  DateTime? _lastSentTime;
 
   LatLng? get currentLocation => _currentLocation;
   bool get isPermissionGranted => _isPermissionGranted;
   bool get isPermissionDeniedForever => _isPermissionDeniedForever;
 
   CarLocationProvider({required this.carNumber});
-
-  Future<void> _storeCarData(
-      String busNumber, double latitude, double longitude, String token) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl/update-car-location'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'carNumber': carNumber,
-          'latitude': latitude,
-          'longitude': longitude,
-          'token': token,
-        }),
-      );
-      if (response.statusCode != 200) {
-        debugPrint('Failed to store car location: ${response.body}');
-      }
-    } catch (e) {
-      debugPrint('Error occurred while storing car location: $e');
-    }
-  }
 
   Future<void> startCarLocationUpdates(String token) async {
     try {
@@ -85,21 +63,6 @@ class CarLocationProvider with ChangeNotifier {
           _currentLocation =
               LatLng(locationData.latitude!, locationData.longitude!);
           debugPrint("Location: $_currentLocation");
-          // Store the current location on the server
-          // Check if sufficient time has passed since the last update
-          final now = DateTime.now();
-          if (_lastSentTime == null ||
-              now.difference(_lastSentTime!) >= const Duration(seconds: 5)) {
-            _lastSentTime = now;
-            debugPrint("Last sent time: $_lastSentTime");
-            // Store the current location on the server
-            // _storeCarData(
-            //   carNumber,
-            //   locationData.latitude!,
-            //   locationData.longitude!,
-            //   token,
-            // );
-          }
           notifyListeners();
         });
       }
