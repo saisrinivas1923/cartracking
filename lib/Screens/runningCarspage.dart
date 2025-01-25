@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:car_tracking/Providers/runningCarsProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
+
+import '../Providers/runningCarsProvider.dart';
 import '../Constants/widget.dart';
 import '../Providers/CarLocationProvider.dart';
 import '../Services/localization_helper.dart';
@@ -21,13 +22,14 @@ class Runningcarspage extends StatefulWidget {
 
 class _RunningcarspageState extends State<Runningcarspage> {
   @override
-  void initState()
-  {
+  void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_){
-      Provider.of<Runningcarsprovider>(context,listen: false).fetchAllCars();
+    // Fetch all cars when the page is created
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<Runningcarsprovider>(context, listen: false).fetchAllCars();
     });
   }
+
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
@@ -90,12 +92,20 @@ class _RunningcarspageState extends State<Runningcarspage> {
                       color: Colors.white,
                       size: 30,
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AllCarMapPage()));
-                    },
+                    onPressed:
+                        Provider.of<Runningcarsprovider>(context, listen: false)
+                                .Cars
+                                .isEmpty
+                            ? () {
+                              
+                            }
+                            : () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const AllCarMapPage()));
+                              },
                   ),
                 ],
               ),
@@ -104,6 +114,9 @@ class _RunningcarspageState extends State<Runningcarspage> {
         ),
       ),
       body: RefreshIndicator(
+        color: isDarkMode
+            ? const Color.fromRGBO(83, 215, 238, 1)
+            : Colors.orange, // Set the color of the refresh indicator
         onRefresh: () async {
           // Trigger the fetchAllCars function to refresh data
           await Provider.of<Runningcarsprovider>(context, listen: false)
@@ -120,80 +133,82 @@ class _RunningcarspageState extends State<Runningcarspage> {
                 ),
               );
             }
-            if (carProvider.Cars.isEmpty) {
-              return Center(
-                child: Text(
-                  "No Cars Are Currently Running...",
-                  textScaler: const TextScaler.linear(1),
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: isDarkMode
-                        ? const Color.fromRGBO(83, 215, 238, 1)
-                        : Colors.orangeAccent,
-                  ),
-                ),
-              );
-            }
-
-            // Add RefreshIndicator to allow drag-to-refresh functionality
+            // Wrapping with a ListView to make RefreshIndicator work even when empty
             return Padding(
               padding: const EdgeInsets.all(10.0),
-              child: ListView.builder(
-                itemCount: carProvider.Cars.length,
-                itemBuilder: (context, index) {
-                  final CarNumber = carProvider.Cars[index];
-                  return Card(
-                    color: isDarkMode ? Colors.black87 : null,
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                          color: isDarkMode
-                              ? const Color.fromRGBO(83, 215, 238, 1)
-                              : Colors.orange),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    elevation: 5,
-                    shadowColor: isDarkMode ? Colors.orange : Colors.black,
-                    margin: const EdgeInsets.symmetric(vertical: 7),
-                    child: ListTile(
-                      minTileHeight: isDarkMode ? 65 : 70,
-                      contentPadding: const EdgeInsets.all(5),
-                      leading: Icon(
-                        Icons.directions_car,
-                        color: isDarkMode
-                            ? const Color.fromARGB(255, 238, 234, 234)
-                            : Colors.black,
-                        size: isDarkMode ? 30 : 35,
+              child: ListView(
+                children: [
+                  if (carProvider.Cars.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: MediaQuery.of(context).size.height * 0.4,
+                        horizontal: MediaQuery.of(context).size.width * 0.15,
                       ),
-                      title: Text(
-                        'Car Number : $CarNumber',
-                        textScaler: isDarkMode
-                            ? const TextScaler.linear(0.9)
-                            : const TextScaler.linear(1),
+                      child: Text(
+                        "No Cars Are Currently Running...",
+                        textScaler: const TextScaler.linear(1),
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color:
-                          isDarkMode ? Colors.white : Colors.black87,
+                          color: isDarkMode
+                              ? const Color.fromRGBO(83, 215, 238, 1)
+                              : Colors.orangeAccent,
                         ),
                       ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.location_on,
-                              color: Colors.red,
-                            ),
-                            onPressed: () {
-                              carProvider.navigateToCarLocation(
-                                  context, CarNumber);
-                            },
+                    )
+                  else
+                    ...carProvider.Cars.map((carNumber) {
+                      return Card(
+                        color: isDarkMode ? Colors.black87 : null,
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                              color: isDarkMode
+                                  ? const Color.fromRGBO(83, 215, 238, 1)
+                                  : Colors.orange),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 5,
+                        shadowColor: isDarkMode ? Colors.orange : Colors.black,
+                        margin: const EdgeInsets.symmetric(vertical: 7),
+                        child: ListTile(
+                          minTileHeight: isDarkMode ? 65 : 70,
+                          contentPadding: const EdgeInsets.all(5),
+                          leading: Icon(
+                            Icons.directions_car,
+                            color: isDarkMode
+                                ? const Color.fromARGB(255, 238, 234, 234)
+                                : Colors.black,
+                            size: isDarkMode ? 30 : 35,
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                          title: Text(
+                            'Car Number : $carNumber',
+                            textScaler: isDarkMode
+                                ? const TextScaler.linear(0.9)
+                                : const TextScaler.linear(1),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.location_on,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  carProvider.navigateToCarLocation(
+                                      context, carNumber);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                ],
               ),
             );
           },
@@ -202,7 +217,6 @@ class _RunningcarspageState extends State<Runningcarspage> {
     );
   }
 }
-
 
 class AllCarMapPage extends StatefulWidget {
   const AllCarMapPage({super.key});
