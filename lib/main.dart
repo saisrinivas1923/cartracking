@@ -1,15 +1,16 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
+import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:lottie/lottie.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 import '../Services/localization_helper.dart';
 import '../Providers/CommonProvider.dart';
@@ -20,7 +21,6 @@ import '../Services/background_service.dart';
 import '../Constants/urls.dart';
 import '../Providers/runningCarsProvider.dart';
 import '../Services/runningCarsApiService.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +28,6 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
     MultiProvider(
@@ -39,19 +38,26 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => ThemeProvider(),
         ),
-        ChangeNotifierProvider(create: (_) => CurrentIndexProvider()),
+        ChangeNotifierProvider(
+          create: (_) => CurrentIndexProvider(),
+        ),
         ChangeNotifierProvider(
           create: (_) => MapState(),
         ),
         ChangeNotifierProvider(
-          create: (_) => Runningcarsprovider(apiService: Runningcarsapiservice(apiBaseUrl: apiBaseUrl)),
+          create: (_) => Runningcarsprovider(
+            apiService: Runningcarsapiservice(apiBaseUrl: apiBaseUrl),
+          ),
         ),
       ],
       child: BusTrackingApp(),
     ),
   );
 
-  await NotificationService.instance.initialize();
+  if (Platform.isAndroid || Platform.isIOS) {
+    await Permission.notification.request();
+    await Permission.location.request();
+  }
   await initializeService();
 }
 
@@ -68,6 +74,7 @@ class BusTrackingApp extends StatelessWidget {
           Locale('en', ''), // English
           Locale('hi', ''), // Hindi
           Locale('te', ''), //Telugu
+          Locale('jpn','') , // Japanese
         ],
         localizationsDelegates: [
           LocalizationDelegate(provider.locale), // Your custom delegate
@@ -75,6 +82,15 @@ class BusTrackingApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate, // Required for generic widgets
           GlobalCupertinoLocalizations.delegate,
         ],
+        localeResolutionCallback: (locale, supportedLocales) {
+    // Resolve locale based on user preference
+    for (var supportedLocale in supportedLocales) {
+      if (supportedLocale.languageCode == locale?.languageCode) {
+        return supportedLocale;
+      }
+    }
+    return supportedLocales.first;
+  },
         theme: ThemeData(
           brightness: Brightness.light,
           textTheme: const TextTheme(
@@ -183,7 +199,7 @@ class _HomePageState extends State<HomePage> {
   final String appLink =
       'https://play.google.com/';
   final List<String> images = [
-    'assets/au.jpg',// Replace with your actual asset paths
+    'assets/au.jpg',
     'assets/aditya.jpg',
     'assets/2.jpeg',
     'assets/3.jpeg',
@@ -202,7 +218,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     //askNotificationPermission();
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final currentIndexProvider = Provider.of<CurrentIndexProvider>(context);
+    final currentIndexProvider = Provider.of<CurrentIndexProvider>(context,listen: false);
     final brightness = Theme.of(context).brightness;
     final isDarkMode = brightness == Brightness.dark;
     return Scaffold(
@@ -820,8 +836,8 @@ class PopupPage extends StatelessWidget {
                 const SizedBox(
                   width: 15,
                 ),
-                const Text(
-                  "Developed by",
+                Text(
+                   LocalizationHelper.of(context).translate('devby'),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -841,26 +857,26 @@ class PopupPage extends StatelessWidget {
             const SizedBox(height: 10.0),
             Expanded(
               child: ListView(
-                children: const [
+                children: [
                   ListTile(
                     leading: CircleAvatar(child: Text("SS")),
                     title: Text("SaiSrinivas"),
-                    subtitle: Text('Team Member'),
+                    subtitle: Text(LocalizationHelper.of(context).translate('TeamMember')),
                   ),
                   ListTile(
                     leading: CircleAvatar(child: Text("SR")),
                     title: Text("SriRam Reddy S"),
-                    subtitle: Text('Team Member'),
+                    subtitle: Text(LocalizationHelper.of(context).translate('TeamMember')),
                   ),
                   ListTile(
                     leading: CircleAvatar(child: Text("VR")),
                     title: Text("Vikas Reddy Mallidi"),
-                    subtitle: Text('Team Member'),
+                    subtitle: Text(LocalizationHelper.of(context).translate('TeamMember')),
                   ),
                   ListTile(
                     leading: CircleAvatar(child: Text("DR")),
                     title: Text("Deekshith Reddi"),
-                    subtitle: Text('Team Member'),
+                    subtitle: Text(LocalizationHelper.of(context).translate('TeamMember')),
                   ),
                 ],
               ),

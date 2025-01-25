@@ -1,14 +1,14 @@
 import 'dart:convert';
-import 'package:car_tracking/Constants/urls.dart';
-import 'package:car_tracking/Screens/CarDisplay.dart';
-import 'package:car_tracking/Screens/nonrunningCarspage.dart';
-import 'package:car_tracking/Screens/runningCarspage.dart';
-import 'package:car_tracking/Services/authState.dart';
-import 'package:car_tracking/Services/localization_helper.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../Constants/urls.dart';
+import '../Screens/CarDisplay.dart';
+import '../Screens/nonrunningCarspage.dart';
+import '../Screens/runningCarspage.dart';
+import '../Services/authState.dart';
+import '../Services/localization_helper.dart';
 class Admindashboard extends StatefulWidget {
   const Admindashboard({super.key});
   @override
@@ -207,8 +207,8 @@ class _AdmindashboardState extends State<Admindashboard> {
                                   ),
                                 ),
                               ),
-                              const Text(
-                                "Car Status",
+                              Text(
+                                LocalizationHelper.of(context).translate('CarStatus'),
                                 style: TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
                               ),
@@ -223,12 +223,12 @@ class _AdmindashboardState extends State<Admindashboard> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Indicator(
-                                  color: Colors.green, text: "Running Cars"),
+                              Indicator(
+                                  color: Colors.green, text: LocalizationHelper.of(context).translate('Running'),),
                               const SizedBox(
                                   height: 10), // Space between indicators
-                              const Indicator(
-                                  color: Colors.red, text: "Non-Running Cars"),
+                              Indicator(
+                                  color: Colors.red, text: LocalizationHelper.of(context).translate('NotRunning'),),
                             ],
                           ),
                         ),
@@ -239,7 +239,7 @@ class _AdmindashboardState extends State<Admindashboard> {
                     ),
                     buildMenuButton(
                       context,
-                      LocalizationHelper.of(context).translate('All Cars'),
+                      LocalizationHelper.of(context).translate('AllCars'),
                       Icons.admin_panel_settings_outlined,
                       const PlaceListPage(),
                       cars.length,
@@ -249,7 +249,7 @@ class _AdmindashboardState extends State<Admindashboard> {
                     const SizedBox(height: 20),
                     buildMenuButton(
                       context,
-                      LocalizationHelper.of(context).translate('Running Cars'),
+                      LocalizationHelper.of(context).translate('Running'),
                       Icons.directions_bus_sharp,
                       const Runningcarspage(),
                       _cars.length,
@@ -260,7 +260,7 @@ class _AdmindashboardState extends State<Admindashboard> {
                     buildMenuButton(
                       context,
                       LocalizationHelper.of(context)
-                          .translate('Non-Running Cars'),
+                          .translate('NotRunning'),
                       Icons.directions_bus_sharp,
                       NonRunningcarspage(AllCars: carlist.keys.toList()),
                       cars.length - _cars.length,

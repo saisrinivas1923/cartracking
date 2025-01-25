@@ -5,6 +5,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
+
 import '../Services/authState.dart';
 import '../constants/urls.dart';
 
@@ -140,17 +141,17 @@ final List<MapProvider> mapProviders = [
     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   ),
   MapProvider(
-    name: 'Carto Positron',
+    name: 'Carto Positron Map',
     urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
     subdomains: ['a', 'b', 'c', 'd'],
   ),
   MapProvider(
-    name: 'Carto Dark Matter',
+    name: 'Carto Dark Matter Map',
     urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
     subdomains: ['a', 'b', 'c', 'd'],
   ),
   MapProvider(
-    name: 'Esri Satellite',
+    name: 'Esri Satellite Map',
     urlTemplate:
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     subdomains: null,

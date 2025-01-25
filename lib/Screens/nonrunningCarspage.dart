@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../Constants/widget.dart';
+
 import '../Services/localization_helper.dart';
 import '../Constants/urls.dart';
 import '../Services/authState.dart';
@@ -82,7 +82,7 @@ class _NonRunningcarspageState extends State<NonRunningcarspage>
               child: AppBar(
                 title: Text(
                     LocalizationHelper.of(context)
-                        .translate('Non-Running Cars'),
+                        .translate('NotRunning'),
                     style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                     textScaler: const TextScaler.linear(1)),
@@ -122,7 +122,7 @@ class _NonRunningcarspageState extends State<NonRunningcarspage>
           : widget.AllCars.isEmpty
               ? Center(
                   child: Text(
-                    "No Cars Are There",
+                    LocalizationHelper.of(context).translate('No Cars Are There'),
                     textScaler: TextScaler.linear(1),
                     style: TextStyle(
                       fontSize: 18,
@@ -162,7 +162,7 @@ class _NonRunningcarspageState extends State<NonRunningcarspage>
                             size: 35,
                           ),
                           title: Text(
-                            'Car Number : $CarNumber',
+                            '${LocalizationHelper.of(context).translate('CarNumber')} : $CarNumber',
                             textScaler: const TextScaler.linear(1),
                             style: TextStyle(
                               fontSize: 16,
@@ -176,176 +176,6 @@ class _NonRunningcarspageState extends State<NonRunningcarspage>
                     },
                   ),
                 ),
-    );
-  }
-}
-
-class CarManageStopsScreen extends StatefulWidget {
-  final String car;
-
-  const CarManageStopsScreen({super.key, required this.car});
-
-  @override
-  _CarManageStopsScreenState createState() => _CarManageStopsScreenState();
-}
-
-class _CarManageStopsScreenState extends State<CarManageStopsScreen> {
-  List<String> stops = [];
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchStops();
-  }
-
-  Future<void> fetchStops() async {
-    final token = await AdminTokenStorage.getToken();
-    try {
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl/get-cars'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'token': token}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          stops = List<String>.from(data[widget.car] ?? []);
-          isLoading = false;
-        });
-      } else {
-        throw Exception('Failed to fetch stops: ${response.body}');
-      }
-    } catch (error) {
-      setState(() {
-        isLoading = false;
-      });
-      CustomWidget.showSnackBar('Error fetching stops: $error', context);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final isDarkMode = brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
-      appBar: PreferredSize(
-        preferredSize:
-            Size.fromHeight(MediaQuery.of(context).size.height * 0.13),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDarkMode == false
-                  ? [Colors.orange, Color.fromARGB(255, 255, 119, 110)]
-                  : [Color.fromRGBO(83, 215, 238, 1), Colors.black],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, top: 15),
-              child: AppBar(
-                title: Text(
-                  '${LocalizationHelper.of(context).translate('Stops for')} ${widget.car}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                leading: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.only(left: 10),
-                    margin: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.white,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-                centerTitle: true,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-              ),
-            ),
-          ),
-        ),
-      ),
-      body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-              color:
-                  isDarkMode ? Color.fromRGBO(83, 215, 238, 1) : Colors.orange,
-            ))
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ReorderableListView(
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          if (newIndex > oldIndex) newIndex -= 1;
-                          final item = stops.removeAt(oldIndex);
-                          stops.insert(newIndex, item);
-                        });
-                      },
-                      children: [
-                        for (int index = 0; index < stops.length; index++)
-                          Card(
-                            color: isDarkMode ? Colors.black : Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              side: isDarkMode
-                                  ? const BorderSide(
-                                      color: Color.fromRGBO(83, 215, 238,
-                                          1), // Darker color for border
-                                    )
-                                  : BorderSide.none,
-                            ),
-                            key: ValueKey(stops[index]),
-                            elevation: 5, // Shadow for card
-                            shadowColor: isDarkMode
-                                ? Color.fromRGBO(83, 215, 238, 1)
-                                : Colors.black,
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 6), // Space between cards
-                            child: ListTile(
-                              minTileHeight: 70,
-                              leading: const Icon(
-                                Icons.location_on_outlined,
-                                color: Colors.red,
-                                size: 25,
-                              ), // Same as before
-                              title: Text(
-                                stops[index],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
     );
   }
 }

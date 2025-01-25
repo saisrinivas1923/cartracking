@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../Services/authState.dart';
 import '../Services/localization_helper.dart';
 import '../constants/widget.dart';
-import 'driver_page.dart';
+import '../Screens/driver_page.dart';
 
 class DriverLoginPage extends StatefulWidget {
   const DriverLoginPage({super.key});

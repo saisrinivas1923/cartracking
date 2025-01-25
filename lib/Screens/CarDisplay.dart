@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import '../Constants/widget.dart';
 import '../Services/localization_helper.dart';
 import '../Constants/urls.dart';
 import '../Services/authState.dart';
-import 'Carstops.dart';
+import '../Screens/Carstops.dart';
 
 class PlaceListPage extends StatefulWidget {
   const PlaceListPage({super.key});
@@ -189,7 +190,7 @@ class _PlaceListPageState extends State<PlaceListPage>
       );
     }
     setState(() {
-      is_loading = false;
+      is_loading = false; 
     });
   }
 
@@ -263,7 +264,7 @@ class _PlaceListPageState extends State<PlaceListPage>
             : Cars.isEmpty
                 ? Center(
                     child: Text(
-                      "No Cars Are There",
+                      LocalizationHelper.of(context).translate('No Cars Are There'),
                       textScaler: const TextScaler.linear(1),
                       style: TextStyle(
                         fontSize: 18,
@@ -312,7 +313,7 @@ class _PlaceListPageState extends State<PlaceListPage>
                                 size: 35,
                               ),
                               title: Text(
-                                'Car Number : $CarNumber',
+                                '${LocalizationHelper.of(context).translate('CarNumber')} : $CarNumber',
                                 textScaler: const TextScaler.linear(1),
                                 style: TextStyle(
                                   fontSize: 16,
@@ -414,7 +415,7 @@ class _PlaceListPageState extends State<PlaceListPage>
                                                           width: 10,
                                                         ),
                                                         Text(
-                                                          'Emp ID :',
+                                                          LocalizationHelper.of(context).translate('Empid'),
                                                           style: TextStyle(
                                                               fontSize: 14,
                                                               color: isDarkMode
@@ -444,7 +445,7 @@ class _PlaceListPageState extends State<PlaceListPage>
                                                           width: 10,
                                                         ),
                                                         Text(
-                                                          'Name :',
+                                                          LocalizationHelper.of(context).translate('Name'),
                                                           style: TextStyle(
                                                               fontSize: 14,
                                                               color: isDarkMode
@@ -480,7 +481,7 @@ class _PlaceListPageState extends State<PlaceListPage>
                                                           width: 10,
                                                         ),
                                                         Text(
-                                                          'Mobile No :',
+                                                          LocalizationHelper.of(context).translate('Mobile'),
                                                           style: TextStyle(
                                                               fontSize: 14,
                                                               color: isDarkMode
@@ -539,42 +540,42 @@ class _PlaceListPageState extends State<PlaceListPage>
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text(LocalizationHelper.of(context).translate('car'),
+                  title: Text(LocalizationHelper.of(context).translate('EnterCar'),
                       textScaler: const TextScaler.linear(1)),
                   content: Column(mainAxisSize: MainAxisSize.min, children: [
                     TextField(
                       controller: empidController,
                       decoration: InputDecoration(
                         hintText: LocalizationHelper.of(context)
-                            .translate('Employee ID'),
+                            .translate('EmployeeId'),
                       ),
                     ),
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
                         hintText: LocalizationHelper.of(context)
-                            .translate('Employee Name'),
+                            .translate('EmployeeName'),
                       ),
                     ),
                     TextField(
                       controller: mobController,
                       decoration: InputDecoration(
                         hintText: LocalizationHelper.of(context)
-                            .translate('Emp Mobile No.'),
+                            .translate('EmployeeMobile'),
                       ),
                     ),
                     TextField(
                       controller: CarController,
                       decoration: InputDecoration(
                         hintText: LocalizationHelper.of(context)
-                            .translate('Car Number'),
+                            .translate('CarNumber'),
                       ),
                     ),
                     TextField(
                       controller: vechicleTypeController,
                       decoration: InputDecoration(
                         hintText: LocalizationHelper.of(context)
-                            .translate('Car Name'),
+                            .translate('CarName'),
                       ),
                     ),
                   ]),

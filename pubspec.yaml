@@ -36,10 +36,7 @@ dependencies:
   location:
   shared_preferences:
   flutter_background_service:
-  timelines:
   provider:
-  firebase_messaging:
-  firebase_core:
   flutter_localizations:
     sdk: flutter
   intl:

@@ -10,7 +10,7 @@ import '../constants/widget.dart';
 import '../Services/localization_helper.dart';
 import '../constants/urls.dart';
 import '../Services/authState.dart';
-import 'CarDisplay.dart';
+import '../Screens/CarDisplay.dart';
 
 class CarManageStopsScreen extends StatefulWidget {
   final String car;
@@ -338,7 +338,7 @@ class AdminCarMapPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            "${LocalizationHelper.of(context).translate('Car Location')}: $carNumber",
+            "${LocalizationHelper.of(context).translate('cl')}: $carNumber",
             textScaler: const TextScaler.linear(1),
             style: const TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold),
@@ -427,8 +427,8 @@ class AdminCarMapPage extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Select Map Style",
+                          Text(
+                            LocalizationHelper.of(context).translate('Select Map Style'),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -438,7 +438,7 @@ class AdminCarMapPage extends StatelessWidget {
                           ...mapProviders.map((provider) {
                             return ListTile(
                               leading: const Icon(Icons.map),
-                              title: Text(provider.name),
+                              title: Text(LocalizationHelper.of(context).translate(provider.name)),
                               onTap: () {
                                 mapState.updateProvider(provider);
                                 Navigator.pop(
