@@ -53,9 +53,8 @@ void main() async {
       child: BusTrackingApp(),
     ),
   );
-  if (Platform.isAndroid || Platform.isIOS) {
-    await Permission.location.request();
-  }
+  
+  await NotificationService.instance.initialize();
   await initializeService();
 }
 
