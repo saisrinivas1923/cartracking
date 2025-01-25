@@ -34,6 +34,7 @@ Future<void> initializeService() async {
       if (token == null) return;
 
       if (response.actionId == 'stop_service') {
+        debugPrint('Stopping service...');
         // Make sure Provider usage is redesigned to avoid `context` dependency here
         try {
           final provider = CarLocationProvider(
@@ -123,17 +124,16 @@ void onStart(ServiceInstance service) async {
           'Running at Lat: ${position.latitude}, Lng: ${position.longitude}',
           NotificationDetails(
             android: AndroidNotificationDetails(
-              'my_foreground',
-              'MY FOREGROUND SERVICE',
-              icon: 'ic_bg_service_small',
-              ongoing: true,
-              actions: [
-                      AndroidNotificationAction(
-                        'stop_service',
-                        'Stop Service', // Do not reopen app
-                      ),
-                    ]
-            ),
+                'my_foreground', 'MY FOREGROUND SERVICE',
+                icon: 'ic_bg_service_small',
+                ongoing: true,
+                actions: [
+                  AndroidNotificationAction(
+                    'stop_service',
+                    'Stop Service',
+                    showsUserInterface: true,
+                  ),
+                ]),
           ),
         );
 

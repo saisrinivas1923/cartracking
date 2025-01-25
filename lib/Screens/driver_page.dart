@@ -470,44 +470,46 @@ class _DriverPageState extends State<DriverPage> {
                                   padding: const EdgeInsets.only(
                                       left: 12, right: 12, bottom: 20),
                                   child: GestureDetector(
-                                    onTap: Cars.contains(cars[index].toString())
-                                        ? () {
-                                            showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return AlertDialog(
-                                                    title: Text(
-                                                      LocalizationHelper.of(context).translate('Alert'),
-                                                      textScaler:
-                                                          const TextScaler
-                                                              .linear(1),
-                                                    ),
-                                                    content: Text(
-                                                      LocalizationHelper.of(context).translate('carrunning'),
-                                                      textScaler:
-                                                          const TextScaler
-                                                              .linear(1),
-                                                    ),
-                                                    actions: <Widget>[
-                                                      TextButton(
-                                                        child: Text(
-                                                          LocalizationHelper.of(
-                                                                  context)
-                                                              .translate('ok'),
-                                                          textScaler:
-                                                              const TextScaler
-                                                                  .linear(1),
-                                                        ),
-                                                        onPressed: () {
-                                                          Navigator.of(context)
-                                                              .pop(false);
-                                                        },
-                                                      ),
-                                                    ],
-                                                  );
-                                                });
-                                          }
-                                        : () {
+                                    onTap: 
+                                    // Cars.contains(cars[index].toString())
+                                    //     ? () {
+                                    //         showDialog(
+                                    //             context: context,
+                                    //             builder: (context) {
+                                    //               return AlertDialog(
+                                    //                 title: Text(
+                                    //                   LocalizationHelper.of(context).translate('Alert'),
+                                    //                   textScaler:
+                                    //                       const TextScaler
+                                    //                           .linear(1),
+                                    //                 ),
+                                    //                 content: Text(
+                                    //                   LocalizationHelper.of(context).translate('carrunning'),
+                                    //                   textScaler:
+                                    //                       const TextScaler
+                                    //                           .linear(1),
+                                    //                 ),
+                                    //                 actions: <Widget>[
+                                    //                   TextButton(
+                                    //                     child: Text(
+                                    //                       LocalizationHelper.of(
+                                    //                               context)
+                                    //                           .translate('ok'),
+                                    //                       textScaler:
+                                    //                           const TextScaler
+                                    //                               .linear(1),
+                                    //                     ),
+                                    //                     onPressed: () {
+                                    //                       Navigator.of(context)
+                                    //                           .pop(false);
+                                    //                     },
+                                    //                   ),
+                                    //                 ],
+                                    //               );
+                                    //             });
+                                    //       }
+                                    //     : 
+                                        () {
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
@@ -578,6 +580,7 @@ class _DriverPageState extends State<DriverPage> {
                         ),
                       ),
                     ),
+                    SizedBox(height: 20,),
                   ],
                 ),
               ),
