@@ -21,6 +21,14 @@ class Runningcarspage extends StatefulWidget {
 
 class _RunningcarspageState extends State<Runningcarspage> {
   @override
+  void initState()
+  {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      Provider.of<Runningcarsprovider>(context,listen: false).fetchAllCars();
+    });
+  }
+  @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     final isDarkMode = brightness == Brightness.dark;
@@ -95,40 +103,40 @@ class _RunningcarspageState extends State<Runningcarspage> {
           ),
         ),
       ),
-      body: Consumer<Runningcarsprovider>(
-        builder: (context, carProvider, _) {
-          if (carProvider.isFetching) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: isDarkMode
-                    ? const Color.fromRGBO(83, 215, 238, 1)
-                    : Colors.orange,
-              ),
-            );
-          }
-          if (carProvider.Cars.isEmpty) {
-            return Center(
-              child: Text(
-                "No Cars Are Currently Running...",
-                textScaler: const TextScaler.linear(1),
-                style: TextStyle(
-                  fontSize: 18,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Trigger the fetchAllCars function to refresh data
+          await Provider.of<Runningcarsprovider>(context, listen: false)
+              .fetchAllCars();
+        },
+        child: Consumer<Runningcarsprovider>(
+          builder: (context, carProvider, _) {
+            if (carProvider.isFetching) {
+              return Center(
+                child: CircularProgressIndicator(
                   color: isDarkMode
                       ? const Color.fromRGBO(83, 215, 238, 1)
-                      : Colors.orangeAccent,
+                      : Colors.orange,
                 ),
-              ),
-            );
-          }
+              );
+            }
+            if (carProvider.Cars.isEmpty) {
+              return Center(
+                child: Text(
+                  "No Cars Are Currently Running...",
+                  textScaler: const TextScaler.linear(1),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: isDarkMode
+                        ? const Color.fromRGBO(83, 215, 238, 1)
+                        : Colors.orangeAccent,
+                  ),
+                ),
+              );
+            }
 
-          // Add RefreshIndicator to allow drag-to-refresh functionality
-          return RefreshIndicator(
-            onRefresh: () async {
-              // Trigger the fetchAllCars function to refresh data
-              await Provider.of<Runningcarsprovider>(context, listen: false)
-                  .fetchAllCars();
-            },
-            child: Padding(
+            // Add RefreshIndicator to allow drag-to-refresh functionality
+            return Padding(
               padding: const EdgeInsets.all(10.0),
               child: ListView.builder(
                 itemCount: carProvider.Cars.length,
@@ -187,9 +195,9 @@ class _RunningcarspageState extends State<Runningcarspage> {
                   );
                 },
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
