@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:car_tracking/Providers/CarStopsProvider.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +18,7 @@ import '../Services/authState.dart';
 import '../Providers/LocalizationProvider.dart';
 import '../Providers/CarLocationProvider.dart';
 import '../Services/background_service.dart';
+import '../Providers/CarStopsProvider.dart';
 import '../Constants/urls.dart';
 import '../Services/AllCarsAPIService.dart';
 import '../Providers/runningCarsProvider.dart';

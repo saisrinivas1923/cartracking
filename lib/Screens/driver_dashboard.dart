@@ -1,8 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
+
 import '../Services/localization_helper.dart';
 import '../Constants/urls.dart';
 
@@ -320,7 +321,8 @@ pw.Widget _buildPdfRow(String iconText, String value) {
 
                                 return Card(
                                   margin: const EdgeInsets.all(8),
-                                  color:
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light ? Colors.orange : 
                                       const Color.fromARGB(255, 110, 109, 109),
                                   child: ListTile(
                                     title: Text(dateKey ?? "Unknown Date"),
