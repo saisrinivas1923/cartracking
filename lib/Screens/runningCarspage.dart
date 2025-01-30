@@ -84,43 +84,6 @@ class _RunningcarspageState extends State<Runningcarspage> {
                 centerTitle: true,
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                actions: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.location_on,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                    onPressed:
-                        Provider.of<Runningcarsprovider>(context, listen: false)
-                                .Cars
-                                .isEmpty
-                            ? () {
-                                showDialog(context: context, 
-                                builder: (context){
-                                  return AlertDialog(
-                                    title: Text('No Cars Running'),
-                                    content: Text('There are no cars running to show on the map'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text(LocalizationHelper.of(context).translate('ok'),),
-                                      ),
-                                    ],
-                                  );
-                                });
-                              }
-                            : () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const AllCarMapPage()));
-                              },
-                  ),
-                ],
               ),
             ),
           ),

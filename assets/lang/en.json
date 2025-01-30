@@ -63,6 +63,8 @@
      "nob":"No Data Available",
      "delete":"Delete",
      "cde":"Confirm Deletion",
+     "as":"Add Stop",
+     "sn":"Stop Name",
      "sure":"Are you sure you want to delete bus",
      "yr":"Your Rating",
      "ty":"Thank You",

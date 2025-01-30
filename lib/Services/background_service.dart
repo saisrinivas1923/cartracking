@@ -7,8 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import '../Constants/urls.dart';
 import '../Providers/CarLocationProvider.dart';
-import '../constants/urls.dart';
 import '../Services/authState.dart';
 
 Future<void> initializeService() async {
@@ -86,6 +86,8 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 }
 
 StreamSubscription<Position>? positionStream;
+double totalDistanceTraveled = 0.0; // Global variable to store total distance
+Position? previousPosition = null;
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
@@ -136,6 +138,19 @@ void onStart(ServiceInstance service) async {
                 ]),
           ),
         );
+        
+        // Calculate distance traveled
+        if (previousPosition != null) {
+          final distanceInMeters = Geolocator.distanceBetween(
+            previousPosition!.latitude,
+            previousPosition!.longitude,
+            position.latitude,
+            position.longitude,
+          );
+          totalDistanceTraveled += distanceInMeters;
+        }
+        // Update previous position
+        previousPosition = position;
 
         try {
           final token = (await TokenStorage.getToken())!;
@@ -158,6 +173,29 @@ void onStart(ServiceInstance service) async {
           }
         } catch (e) {
           debugPrint('Error occurred while storing bus location: $e');
+        }
+        try {
+          final carno = (await BusnoTokenStorage.getToken())!;
+          if (carno == null) return;
+          debugPrint(carno);
+          final response = await http.post(
+            Uri.parse('$localapi/save-location'),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              "driverId": carno,
+              "latitude": position.latitude,
+              "longitude": position.longitude,
+              "distance": totalDistanceTraveled,
+            }),
+          );
+
+          if (response.statusCode == 200) {
+            print("Location saved successfully: ${response.body}");
+          } else {
+            print("Failed to save location: ${response.body}");
+          }
+        } catch (e) {
+          print("Error: $e");
         }
       }
 

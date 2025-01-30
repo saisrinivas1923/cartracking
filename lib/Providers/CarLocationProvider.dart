@@ -6,8 +6,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
+import '../Constants/urls.dart';
 import '../Services/authState.dart';
-import '../constants/urls.dart';
 
 class CarLocationProvider with ChangeNotifier {
   final String carNumber;

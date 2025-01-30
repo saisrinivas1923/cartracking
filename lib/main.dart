@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:car_tracking/Providers/CarStopsProvider.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,8 +20,12 @@ import '../Providers/LocalizationProvider.dart';
 import '../Providers/CarLocationProvider.dart';
 import '../Services/background_service.dart';
 import '../Constants/urls.dart';
+import '../Services/AllCarsAPIService.dart';
 import '../Providers/runningCarsProvider.dart';
 import '../Services/runningCarsApiService.dart';
+import '../Providers/AllCarsProvider.dart';
+import '../Providers/AdminDashboardProvider.dart';
+import '../Services/AdminDashboardApiService.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +53,19 @@ void main() async {
           create: (_) => Runningcarsprovider(
             apiService: Runningcarsapiservice(apiBaseUrl: apiBaseUrl),
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CarProvider(
+            apiService: AllCarsApiService(baseUrl: apiBaseUrl)
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AdminDashboardProvider(
+            apiService: AdminDashboardApiService(apiBaseUrl: apiBaseUrl),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CarStopsProvider(),
         ),
       ],
       child: BusTrackingApp(),
