@@ -38,11 +38,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!--        <service android:name="me.everything.android.ui.legacy.widget.BackgroundService">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="me.everything.android.ui.legacy.widget.BackgroundService" />-->
-<!--            </intent-filter>-->
-<!--        </service>-->
 
         <service
             android:name="com.google.firebase.messaging.FirebaseMessagingService"

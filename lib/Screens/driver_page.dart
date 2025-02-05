@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:car_tracking/Providers/CommonProvider.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_map/flutter_map.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+import '../Providers/CommonProvider.dart';
 import '../Constants/widget.dart';
 import '../Providers/CarLocationProvider.dart';
 import '../Services/localization_helper.dart';
@@ -34,7 +34,6 @@ class _DriverPageState extends State<DriverPage> {
     'assets/mahindra Marazzo.jpg'
   ];
 
-  bool _isSharingcar = false;
   bool is_loading = false;
   bool isSelect = false;
   List<String> Cars = [];
@@ -129,10 +128,6 @@ class _DriverPageState extends State<DriverPage> {
       );
       return;
     }
-    setState(() {
-      _isSharingcar = true;
-    });
-
     // Simulate a delay for better user feedback
     await Future.delayed(const Duration(seconds: 1));
 
@@ -144,10 +139,6 @@ class _DriverPageState extends State<DriverPage> {
       ),
     ).then((_) async {
       FocusManager.instance.primaryFocus?.unfocus();
-      // Reset the sharing state when coming back
-      setState(() {
-        _isSharingcar = false;
-      });
     });
   }
 
@@ -187,7 +178,7 @@ class _DriverPageState extends State<DriverPage> {
                 backgroundColor: Colors.transparent,
                 centerTitle: true,
                 title: Text(
-                  "Car Driver",
+                  LocalizationHelper.of(context).translate('CarDriver'),
                   style: TextStyle(color: Colors.white, fontSize: 22),
                 ),
                 leading: GestureDetector(
@@ -298,7 +289,7 @@ class _DriverPageState extends State<DriverPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(15),
                         child: Text(
-                          "Select Your Car",
+                          LocalizationHelper.of(context).translate('SelectYourCar'),
                           style: TextStyle(
                               color: isDarkMode ? Colors.white : Colors.black,
                               fontSize: 20),
@@ -385,7 +376,7 @@ class _DriverPageState extends State<DriverPage> {
                                       width: 10,
                                     ),
                                     Text(
-                                      'Emp ID :',
+                                      LocalizationHelper.of(context).translate('Empid'),
                                       style: TextStyle(
                                           fontSize: 14,
                                           color: isDarkMode
@@ -415,7 +406,7 @@ class _DriverPageState extends State<DriverPage> {
                                       width: 10,
                                     ),
                                     Text(
-                                      'Name :',
+                                      LocalizationHelper.of(context).translate('Name'),
                                       style: TextStyle(
                                           fontSize: 14,
                                           color: isDarkMode
@@ -451,7 +442,7 @@ class _DriverPageState extends State<DriverPage> {
                                       width: 10,
                                     ),
                                     Text(
-                                      'Mobile No :',
+                                      LocalizationHelper.of(context).translate('Mobile'),
                                       style: TextStyle(
                                           fontSize: 14,
                                           color: isDarkMode
@@ -479,37 +470,52 @@ class _DriverPageState extends State<DriverPage> {
                                   padding: const EdgeInsets.only(
                                       left: 12, right: 12, bottom: 20),
                                   child: GestureDetector(
-                                    onTap: Cars.contains(cars[index].toString())?(){
-                                      showDialog(context: context, builder: (context){
-                                        return AlertDialog(
-                                          title: Text(
-                                            'Alert',
-                                            textScaler: const TextScaler.linear(1),
-                                          ),
-                                          content: Text(
-                                            'Car is already Running',
-                                            textScaler: const TextScaler.linear(1),
-                                          ),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              child: Text(
-                                                LocalizationHelper.of(context).translate('ok'),
-                                                textScaler: const TextScaler.linear(1),
-                                              ),
-                                              onPressed: () {
-                                                Navigator.of(context).pop(false);
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      });
-                                    } : () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => CarMapPage(
-                                                  carNumber: cars[index])));
-                                    },
+                                    onTap: Cars.contains(cars[index].toString())
+                                        ? () {
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return AlertDialog(
+                                                    title: Text(
+                                                      LocalizationHelper.of(context).translate('Alert'),
+                                                      textScaler:
+                                                          const TextScaler
+                                                              .linear(1),
+                                                    ),
+                                                    content: Text(
+                                                      LocalizationHelper.of(context).translate('carrunning'),
+                                                      textScaler:
+                                                          const TextScaler
+                                                              .linear(1),
+                                                    ),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                        child: Text(
+                                                          LocalizationHelper.of(
+                                                                  context)
+                                                              .translate('ok'),
+                                                          textScaler:
+                                                              const TextScaler
+                                                                  .linear(1),
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop(false);
+                                                        },
+                                                      ),
+                                                    ],
+                                                  );
+                                                });
+                                          }
+                                        : () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        CarMapPage(
+                                                            carNumber:
+                                                                cars[index])));
+                                          },
                                     child: Container(
                                       height: 50,
                                       margin:
@@ -531,23 +537,6 @@ class _DriverPageState extends State<DriverPage> {
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
-                                        //color: Color.fromRGBO(83, 215, 238, 1),
-                                        // boxShadow: [
-                                        //   BoxShadow(
-                                        //     spreadRadius: 2,
-                                        //     blurRadius: 10,
-                                        //     //offset: Offset(-1, 1),
-                                        //     color: Color.fromRGBO(
-                                        //         83, 215, 238, 1),
-                                        //   ),
-                                        // ],
-                                        // border: Border.all(
-                                        //     color: Color.fromRGBO(
-                                        //         83, 215, 238, 1)),
-                                        //
-                                        // color: isDarkMode
-                                        //     ? Colors.white
-                                        //     : Colors.orange,
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Row(
@@ -555,7 +544,7 @@ class _DriverPageState extends State<DriverPage> {
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            "Start the Car",
+                                            LocalizationHelper.of(context).translate('Start the Car'),
                                             style: TextStyle(
                                                 fontSize: 16,
                                                 color: isDarkMode == false
@@ -589,6 +578,7 @@ class _DriverPageState extends State<DriverPage> {
                         ),
                       ),
                     ),
+                    SizedBox(height: 20,),
                   ],
                 ),
               ),
@@ -619,7 +609,6 @@ class _CarMapView extends StatefulWidget {
 }
 
 class _CarMapViewState extends State<_CarMapView> {
-  double _currentSpeed = 0.0;
   late CarLocationProvider _provider;
   late String _token;
   final MapController _mapController = MapController();
@@ -674,20 +663,6 @@ class _CarMapViewState extends State<_CarMapView> {
       FlutterBackgroundService().startService();
     }
     FlutterBackgroundService().invoke("setAsForeground");
-    // try {
-    //   await http.post(Uri.parse("$apiBaseUrl/send-notification"),
-    //       headers: {"Content-Type": "application/json"},
-    //       body: jsonEncode({
-    //         "topic": "all",
-    //         "title": "Bus started",
-    //         "message": "${_provider.busNumber} has started!!!",
-    //         "token": token
-    //       }));
-    // } catch (e) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text("Failed to send notification")),
-    //   );
-    // }
   }
 
   @override
@@ -817,7 +792,7 @@ class _CarMapViewState extends State<_CarMapView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Select Map Style",
+                            LocalizationHelper.of(context).translate('Select Map Style'),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -827,7 +802,7 @@ class _CarMapViewState extends State<_CarMapView> {
                           ...mapProviders.map((provider) {
                             return ListTile(
                               leading: Icon(Icons.map),
-                              title: Text(provider.name),
+                              title: Text(LocalizationHelper.of(context).translate(provider.name)),
                               onTap: () {
                                 mapState.updateProvider(provider);
                                 Navigator.pop(

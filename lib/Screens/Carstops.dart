@@ -1,184 +1,37 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import '../Providers/CarLocationProvider.dart';
+import '../Providers/CarStopsProvider.dart';
 import '../Providers/CarsDetailsProvider.dart';
 import '../constants/widget.dart';
 import '../Services/localization_helper.dart';
-import '../constants/urls.dart';
-import '../Services/authState.dart';
-import 'CarDisplay.dart';
 
-class CarManageStopsScreen extends StatefulWidget {
+class CarManageStopsScreen extends StatelessWidget {
   final String car;
 
   const CarManageStopsScreen({super.key, required this.car});
 
   @override
-  _CarManageStopsScreenState createState() => _CarManageStopsScreenState();
-}
-
-class _CarManageStopsScreenState extends State<CarManageStopsScreen> {
-  List<String> stops = [];
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchStops();
-  }
-
-  Future<void> fetchStops() async {
-    final token = await AdminTokenStorage.getToken();
-    try {
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl/get-cars'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'token': token}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          stops = List<String>.from(data[widget.car] ?? []);
-          isLoading = false;
-        });
-      } else {
-        throw Exception('Failed to fetch stops: ${response.body}');
-      }
-    } catch (error) {
-      setState(() {
-        isLoading = false;
-      });
-      CustomWidget.showSnackBar('Error fetching stops: $error', context);
-    }
-  }
-
-  Future<void> addStop(String stop) async {
-    final token = await AdminTokenStorage.getToken();
-    try {
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl/add-car-stop'),
-        headers: {'Content-Type': 'application/json'},
-        body: json
-            .encode({'carNumber': widget.car, 'stop': stop, 'token': token}),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          stops.add(stop);
-        });
-        CustomWidget.showSnackBar('Stop added successfully', context);
-      } else {
-        throw Exception('Failed to add stop: ${response.body}');
-      }
-    } catch (error) {
-      CustomWidget.showSnackBar('Error adding stop: $error', context);
-    }
-  }
-
-  Future<void> removeStop(String stop) async {
-    final token = await AdminTokenStorage.getToken();
-    try {
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl/remove-car-stop'),
-        headers: {'Content-Type': 'application/json'},
-        body: json
-            .encode({'carNumber': widget.car, 'stop': stop, 'token': token}),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          stops.remove(stop);
-        });
-        if (stops.isEmpty) {
-          Navigator.pop(context);
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const PlaceListPage()));
-        }
-        CustomWidget.showSnackBar('Stop removed successfully', context);
-      } else {
-        throw Exception('Failed to remove stop: ${response.body}');
-      }
-    } catch (error) {
-      CustomWidget.showSnackBar('Error removing stop: $error', context);
-    }
-  }
-
-  Future<void> reorderStops() async {
-    final token = await AdminTokenStorage.getToken();
-    try {
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl/modify-car-stops'),
-        headers: {'Content-Type': 'application/json'},
-        body: json
-            .encode({'carNumber': widget.car, 'stops': stops, 'token': token}),
-      );
-
-      if (response.statusCode == 200) {
-        CustomWidget.showSnackBar('Stops reordered successfully', context);
-      } else {
-        throw Exception('Failed to reorder stops: ${response.body}');
-      }
-    } catch (error) {
-      CustomWidget.showSnackBar('Error reordering stops: $error', context);
-    }
-  }
-
-  void _showAddStopDialog() {
-    String stopName = '';
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(LocalizationHelper.of(context).translate('as')),
-          content: TextField(
-            onChanged: (value) => stopName = value.trim(),
-            decoration: InputDecoration(
-              labelText: LocalizationHelper.of(context).translate('sn'),
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(LocalizationHelper.of(context).translate('cancel')),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (stopName.isNotEmpty) {
-                  addStop(stopName);
-                  Navigator.pop(context);
-                } else {
-                  CustomWidget.showSnackBar(
-                      'Stop name cannot be empty', context);
-                }
-              },
-              child: Text(LocalizationHelper.of(context).translate('okay')),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final isDarkMode = brightness == Brightness.dark;
+    final provider = Provider.of<CarStopsProvider>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      provider.fetchStops(car); // Fetch stops only once
+    });
+
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.black
+          : Colors.white,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: isDarkMode == false
-                  ? [Colors.orange, const Color.fromARGB(255, 255, 119, 110)]
-                  : [const Color.fromRGBO(83, 215, 238, 1), Colors.black],
+              colors: Theme.of(context).brightness == Brightness.dark
+                  ? [const Color.fromRGBO(83, 215, 238, 1), Colors.black]
+                  : [Colors.orange, const Color.fromARGB(255, 255, 119, 110)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -192,16 +45,14 @@ class _CarManageStopsScreenState extends State<CarManageStopsScreen> {
               padding: const EdgeInsets.only(left: 20, right: 20, top: 15),
               child: AppBar(
                 title: Text(
-                  '${LocalizationHelper.of(context).translate('msfc')} ${widget.car}',
+                  '${LocalizationHelper.of(context).translate('msfc')} $car',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 leading: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
+                  onTap: () => Navigator.pop(context),
                   child: Container(
                     padding: const EdgeInsets.only(left: 10),
                     margin: const EdgeInsets.all(5),
@@ -225,101 +76,158 @@ class _CarManageStopsScreenState extends State<CarManageStopsScreen> {
           ),
         ),
       ),
-      body: isLoading
-          ? Center(
+      body: Consumer<CarStopsProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading) {
+            return Center(
               child: CircularProgressIndicator(
-              color: isDarkMode
-                  ? const Color.fromRGBO(83, 215, 238, 1)
-                  : Colors.orange,
-            ))
-          : Padding(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color.fromRGBO(83, 215, 238, 1)
+                    : Colors.orange,
+              ),
+            );
+          } else if (provider.stops.isEmpty) {
+            return Center(
+              child: Text(
+                LocalizationHelper.of(context).translate('No stops available'),
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color.fromRGBO(83, 215, 238, 1)
+                      : Colors.orangeAccent,
+                ),
+              ),
+            );
+          } else {
+            return Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Column(
+              child: ReorderableListView(
+                onReorder: (oldIndex, newIndex) {
+                  if (newIndex > oldIndex) newIndex -= 1;
+                  final item = provider.stops.removeAt(oldIndex);
+                  provider.stops.insert(newIndex, item);
+                  provider.reorderStops(car, provider.stops);
+                },
                 children: [
-                  Expanded(
-                    child: ReorderableListView(
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          if (newIndex > oldIndex) newIndex -= 1;
-                          final item = stops.removeAt(oldIndex);
-                          stops.insert(newIndex, item);
-                        });
-                        reorderStops();
-                      },
-                      children: [
-                        for (int index = 0; index < stops.length; index++)
-                          Card(
-                            color: isDarkMode ? Colors.black : Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              side: isDarkMode
-                                  ? const BorderSide(
-                                      color: Color.fromRGBO(83, 215, 238, 1)
-                                      // Darker color for border
-                                      )
-                                  : BorderSide.none,
-                            ),
-                            key: ValueKey(stops[index]),
-                            elevation: 5, // Shadow for card
-                            shadowColor: isDarkMode
-                                ? const Color.fromRGBO(83, 215, 238, 1)
-                                : Colors.black,
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 6), // Space between cards
-                            child: ListTile(
-                              minTileHeight: 70,
-                              leading: const Icon(
-                                Icons.location_on_outlined,
-                                color: Colors.red,
-                                size: 25,
-                              ), // Same as before
-                              title: Text(
-                                stops[index],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              trailing: IconButton(
-                                icon: Icon(Icons.delete,
-                                    color: isDarkMode
-                                        ? Colors.red
-                                        : Colors
-                                            .blueGrey), // Updated delete icon color
-                                onPressed: () => removeStop(stops[index]),
-                              ),
-                            ),
+                  for (int index = 0; index < provider.stops.length; index++)
+                    Card(
+                      key: ValueKey(provider.stops[index]),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.black87
+                          : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        side: BorderSide(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color.fromRGBO(83, 215, 238, 1)
+                              : Colors.orange,
+                        ),
+                      ),
+                      elevation: 5,
+                      shadowColor:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? const Color.fromRGBO(83, 215, 238, 1)
+                              : Colors.black,
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      child: ListTile(
+                        minTileHeight: 70,
+                        leading: const Icon(
+                          Icons.location_on_outlined,
+                          color: Colors.red,
+                          size: 25,
+                        ),
+                        title: Text(
+                          provider.stops[index],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
                           ),
-                      ],
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(
+                            Icons.delete,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.red
+                                : Colors.blueGrey,
+                          ),
+                          onPressed: () =>
+                              provider.removeStop(car, provider.stops[index]),
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               ),
-            ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: GestureDetector(
-        onTap: _showAddStopDialog,
-        child: Container(
-          height: 50,
-          width: 60,
-          decoration: BoxDecoration(
-            color: isDarkMode
-                ? Colors.black87
-                : Colors.black54, // Updated to match admin FAB color
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            border: Border.all(
-              color: isDarkMode
+            );
+          }
+        },
+      ),
+    floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    floatingActionButton: GestureDetector(
+      onTap: (){
+        _showAddStopDialog(context, car);
+      },
+      child: Container(
+        height: 50,
+        width: 60,
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.black87
+              : Colors.black54, // Updated to match admin FAB color
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? const Color.fromRGBO(83, 215, 238, 1)
+                : Colors.white,
+          ),
+        ),
+        child: Center(
+          child: Icon(Icons.add,
+              color: Theme.of(context).brightness == Brightness.dark
                   ? const Color.fromRGBO(83, 215, 238, 1)
-                  : Colors.white,
+                  : Colors.white),
+        ), // Updated icon color
+      ),
+    ),
+    );
+  }
+
+  void _showAddStopDialog(BuildContext context, String carNumber) {
+    String stopName = '';
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(LocalizationHelper.of(context).translate('as')),
+          content: TextField(
+            onChanged: (value) => stopName = value.trim(),
+            decoration: InputDecoration(
+              labelText: LocalizationHelper.of(context).translate('sn'),
+              border: const OutlineInputBorder(),
             ),
           ),
-          child: Center(
-            child: Icon(Icons.add,
-                color: isDarkMode
-                    ? const Color.fromRGBO(83, 215, 238, 1)
-                    : Colors.white),
-          ), // Updated icon color
-        ),
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(LocalizationHelper.of(context).translate('cancel')),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (stopName.isNotEmpty) {
+                  Provider.of<CarStopsProvider>(context, listen: false)
+                      .addStop(carNumber, stopName);
+                  Navigator.pop(context);
+                  CustomWidget.showSnackBar(
+                      'Stop added successfully', context);
+                } else {
+                  CustomWidget.showSnackBar(
+                      'Stop name cannot be empty', context);
+                }
+              },
+              child: Text(LocalizationHelper.of(context).translate('okay')),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -338,7 +246,7 @@ class AdminCarMapPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            "${LocalizationHelper.of(context).translate('Car Location')}: $carNumber",
+            "${LocalizationHelper.of(context).translate('cl')}: $carNumber",
             textScaler: const TextScaler.linear(1),
             style: const TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold),
@@ -427,8 +335,8 @@ class AdminCarMapPage extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Select Map Style",
+                          Text(
+                            LocalizationHelper.of(context).translate('Select Map Style'),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -438,7 +346,7 @@ class AdminCarMapPage extends StatelessWidget {
                           ...mapProviders.map((provider) {
                             return ListTile(
                               leading: const Icon(Icons.map),
-                              title: Text(provider.name),
+                              title: Text(LocalizationHelper.of(context).translate(provider.name)),
                               onTap: () {
                                 mapState.updateProvider(provider);
                                 Navigator.pop(

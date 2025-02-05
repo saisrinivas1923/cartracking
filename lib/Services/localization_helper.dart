@@ -34,7 +34,7 @@ class LocalizationDelegate extends LocalizationsDelegate<LocalizationHelper> {
   @override
   bool isSupported(Locale locale) {
     // Checks if the locale is supported by comparing its language code
-    return ['en', 'hi','te'].contains(locale.languageCode);
+    return ['en', 'hi','te','jpn'].contains(locale.languageCode);
   }
 
   @override

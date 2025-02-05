@@ -1,14 +1,14 @@
+import 'dart:ui';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui';
-// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import '../Constants/urls.dart';
 import '../Providers/CarLocationProvider.dart';
-import '../constants/urls.dart';
 import '../Services/authState.dart';
 
 Future<void> initializeService() async {
@@ -34,6 +34,7 @@ Future<void> initializeService() async {
       if (token == null) return;
 
       if (response.actionId == 'stop_service') {
+        debugPrint('Stopping service...');
         // Make sure Provider usage is redesigned to avoid `context` dependency here
         try {
           final provider = CarLocationProvider(
@@ -85,13 +86,14 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 }
 
 StreamSubscription<Position>? positionStream;
+double totalDistanceTraveled = 0.0; // Global variable to store total distance
+Position? previousPosition = null;
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
 
   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  DateTime? lastUpdate;
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
@@ -111,50 +113,50 @@ void onStart(ServiceInstance service) async {
     positionStream = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 0, // Minimum change in meters to notify location change
+        distanceFilter: 20, // Minimum change in meters to notify location change
       ),
     ).listen((Position position) async {
       if (position == null) return;
-      debugPrint('$position jndskjnbhhjbvkdksjbjbvs v jmdds');
+
       if (service is AndroidServiceInstance &&
           await service.isForegroundService()) {
         flutterLocalNotificationsPlugin.show(
           888,
           'Location Tracking',
           'Running at Lat: ${position.latitude}, Lng: ${position.longitude}',
-          const NotificationDetails(
+          NotificationDetails(
             android: AndroidNotificationDetails(
-              'my_foreground',
-              'MY FOREGROUND SERVICE',
-              icon: 'ic_bg_service_small',
-              ongoing: true,
-              actions: [
-                AndroidNotificationAction(
-                  'stop_service',
-                  'Stop Service',
-                  showsUserInterface: true,
-                ),
-              ],
-            ),
+                'my_foreground', 'MY FOREGROUND SERVICE',
+                icon: 'ic_bg_service_small',
+                ongoing: true,
+                actions: [
+                  AndroidNotificationAction(
+                    'stop_service',
+                    'Stop Service',
+                    showsUserInterface: true,
+                  ),
+                ]),
           ),
         );
+        
+        // Calculate distance traveled
+        if (previousPosition != null) {
+          final distanceInMeters = Geolocator.distanceBetween(
+            previousPosition!.latitude,
+            previousPosition!.longitude,
+            position.latitude,
+            position.longitude,
+          );
+          totalDistanceTraveled = distanceInMeters/1000;
+        }
+        // Update previous position
+        previousPosition = position;
 
         try {
-          var now = DateTime.now();
-          lastUpdate ??= now;
-          // if (now.difference(lastUpdate!).inSeconds >= 50) {
-          //   service.invoke('stopService');
-          //
-          //   if (!await FlutterBackgroundService().isRunning()) {
-          //     positionStream?.cancel();
-          //   }
-          // }
-          debugPrint('$now and $lastUpdate');
           final token = (await TokenStorage.getToken())!;
           final carno = (await BusnoTokenStorage.getToken())!;
           if (token == null || carno == null) return;
 
-          debugPrint('$carno ---- ${position.latitude} --- ${position.longitude}');
           final response = await http.post(
             Uri.parse('$apiBaseUrl/update-car-location'),
             headers: {'Content-Type': 'application/json'},
@@ -172,11 +174,29 @@ void onStart(ServiceInstance service) async {
         } catch (e) {
           debugPrint('Error occurred while storing bus location: $e');
         }
+        try {
+          final carno = (await BusnoTokenStorage.getToken())!;
+          if (carno == null) return;
+          debugPrint(carno);
+          final response = await http.post(
+            Uri.parse('$localapi/save-location'),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              "driverId": carno,
+              "latitude": position.latitude,
+              "longitude": position.longitude,
+              "distance": totalDistanceTraveled,
+            }),
+          );
 
-        // service.setForegroundNotificationInfo(
-        //   title: ,
-        //   content: 'Lat: ${position.latitude}, Lng: ${position.longitude}',
-        // );
+          if (response.statusCode == 200) {
+            print("Location saved successfully: ${response.body}");
+          } else {
+            print("Failed to save location: ${response.body}");
+          }
+        } catch (e) {
+          print("Error: $e");
+        }
       }
 
       service.invoke('update', {

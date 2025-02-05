@@ -2,12 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_map/flutter_map.dart';
 
 import '../Providers/runningCarsProvider.dart';
-import '../Constants/widget.dart';
 import '../Providers/CarLocationProvider.dart';
 import '../Services/localization_helper.dart';
 import '../Constants/urls.dart';
@@ -58,7 +57,7 @@ class _RunningcarspageState extends State<Runningcarspage> {
               padding: const EdgeInsets.only(left: 20, right: 20, top: 15),
               child: AppBar(
                 title: Text(
-                  LocalizationHelper.of(context).translate('admindashboard'),
+                  LocalizationHelper.of(context).translate('Running'),
                   style: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.bold),
                   textScaler: const TextScaler.linear(1),
@@ -85,29 +84,6 @@ class _RunningcarspageState extends State<Runningcarspage> {
                 centerTitle: true,
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                actions: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.location_on,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                    onPressed:
-                        Provider.of<Runningcarsprovider>(context, listen: false)
-                                .Cars
-                                .isEmpty
-                            ? () {
-                              
-                            }
-                            : () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const AllCarMapPage()));
-                              },
-                  ),
-                ],
               ),
             ),
           ),
@@ -145,7 +121,7 @@ class _RunningcarspageState extends State<Runningcarspage> {
                         horizontal: MediaQuery.of(context).size.width * 0.15,
                       ),
                       child: Text(
-                        "No Cars Are Currently Running...",
+                        LocalizationHelper.of(context).translate('No Car'),
                         textScaler: const TextScaler.linear(1),
                         style: TextStyle(
                           fontSize: 18,
@@ -180,7 +156,7 @@ class _RunningcarspageState extends State<Runningcarspage> {
                             size: isDarkMode ? 30 : 35,
                           ),
                           title: Text(
-                            'Car Number : $carNumber',
+                            '${LocalizationHelper.of(context).translate('CarNumber')} : $carNumber',
                             textScaler: isDarkMode
                                 ? const TextScaler.linear(0.9)
                                 : const TextScaler.linear(1),
@@ -272,19 +248,6 @@ class _AllCarPageState extends State<AllCarMapPage> {
                         const Icon(Icons.directions_car, color: Colors.blue),
                       ],
                     ),
-                    // Container(
-                    //   height: 18,
-                    //   width: 18,
-                    //   decoration: const BoxDecoration(
-                    //       color: Colors.red,
-                    //       borderRadius: BorderRadius.all(Radius.circular(100))),
-                    //   child: Center(
-                    //       child: Text(
-                    //         entry.key,
-                    //         style:
-                    //         const TextStyle(fontSize: 7, color: Colors.white),
-                    //       )),
-                    // ),
                   ],
                 ),
               ],
@@ -319,7 +282,7 @@ class _AllCarPageState extends State<AllCarMapPage> {
     final mapState = Provider.of<MapState>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Car Locations on Map'),
+        title: Text(LocalizationHelper.of(context).translate('Cars Location on Map')),
         actions: [
           PopupMenuButton<MapProvider>(
             onSelected: (provider) => mapState.updateProvider(provider),
@@ -355,177 +318,6 @@ class _AllCarPageState extends State<AllCarMapPage> {
                   markers: _busMarkers, // Display the bus markers on the map
                 ),
               ],
-            ),
-    );
-  }
-}
-
-class CarManageStopsScreen extends StatefulWidget {
-  final String car;
-
-  const CarManageStopsScreen({super.key, required this.car});
-
-  @override
-  _CarManageStopsScreenState createState() => _CarManageStopsScreenState();
-}
-
-class _CarManageStopsScreenState extends State<CarManageStopsScreen> {
-  List<String> stops = [];
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchStops();
-  }
-
-  Future<void> fetchStops() async {
-    final token = await AdminTokenStorage.getToken();
-    try {
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl/get-cars'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'token': token}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          stops = List<String>.from(data[widget.car] ?? []);
-          isLoading = false;
-        });
-      } else {
-        throw Exception('Failed to fetch stops: ${response.body}');
-      }
-    } catch (error) {
-      setState(() {
-        isLoading = false;
-      });
-      CustomWidget.showSnackBar('Error fetching stops: $error', context);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final isDarkMode = brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
-      appBar: PreferredSize(
-        preferredSize:
-            Size.fromHeight(MediaQuery.of(context).size.height * 0.13),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDarkMode == false
-                  ? [Colors.orange, const Color.fromARGB(255, 255, 119, 110)]
-                  : [const Color.fromRGBO(83, 215, 238, 1), Colors.black],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, top: 15),
-              child: AppBar(
-                title: Text(
-                  '${LocalizationHelper.of(context).translate('Stops for')} ${widget.car}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                leading: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.only(left: 10),
-                    margin: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.white,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-                centerTitle: true,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-              ),
-            ),
-          ),
-        ),
-      ),
-      body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-              color: isDarkMode
-                  ? const Color.fromRGBO(83, 215, 238, 1)
-                  : Colors.orange,
-            ))
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ReorderableListView(
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          if (newIndex > oldIndex) newIndex -= 1;
-                          final item = stops.removeAt(oldIndex);
-                          stops.insert(newIndex, item);
-                        });
-                      },
-                      children: [
-                        for (int index = 0; index < stops.length; index++)
-                          Card(
-                            color: isDarkMode ? Colors.black : Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              side: isDarkMode
-                                  ? const BorderSide(
-                                      color: Color.fromRGBO(83, 215, 238,
-                                          1), // Darker color for border
-                                    )
-                                  : BorderSide.none,
-                            ),
-                            key: ValueKey(stops[index]),
-                            elevation: 5, // Shadow for card
-                            shadowColor: isDarkMode
-                                ? const Color.fromRGBO(83, 215, 238, 1)
-                                : Colors.black,
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 6), // Space between cards
-                            child: ListTile(
-                              minTileHeight: 70,
-                              leading: const Icon(
-                                Icons.location_on_outlined,
-                                color: Colors.red,
-                                size: 25,
-                              ), // Same as before
-                              title: Text(
-                                stops[index],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
     );
   }
