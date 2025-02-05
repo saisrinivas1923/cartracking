@@ -241,7 +241,7 @@ class _AllCarPageState extends State<AllCarMapPage> {
                           color: Colors.white,
                           child: Text(
                             entry.key,
-                            style: const TextStyle(fontSize: 8),
+                            style: const TextStyle(fontSize: 8,color: Colors.black),
                             textScaler: const TextScaler.linear(1),
                           ),
                         ),

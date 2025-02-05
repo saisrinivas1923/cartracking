@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 
 import '../Constants/urls.dart';
 import '../Providers/CarLocationProvider.dart';
@@ -186,6 +187,7 @@ void onStart(ServiceInstance service) async {
               "latitude": position.latitude,
               "longitude": position.longitude,
               "distance": totalDistanceTraveled,
+              "time":DateFormat('HH:mm:ss').format(DateTime.now()),
             }),
           );
 

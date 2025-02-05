@@ -56,7 +56,7 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => CarProvider(
-            apiService: AllCarsApiService(baseUrl: apiBaseUrl)
+              apiService: AllCarsApiService(baseUrl: apiBaseUrl)
           ),
         ),
         ChangeNotifierProvider(
@@ -101,26 +101,26 @@ class BusTrackingApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
         localeResolutionCallback: (locale, supportedLocales) {
-    // Resolve locale based on user preference
-    for (var supportedLocale in supportedLocales) {
-      if (supportedLocale.languageCode == locale?.languageCode) {
-        return supportedLocale;
-      }
-    }
-    return supportedLocales.first;
-  },
+          // Resolve locale based on user preference
+          for (var supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == locale?.languageCode) {
+              return supportedLocale;
+            }
+          }
+          return supportedLocales.first;
+        },
         theme: ThemeData(
           brightness: Brightness.light,
           textTheme: const TextTheme(
             bodyMedium:
-                TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
           ),
         ),
         darkTheme: ThemeData(
           brightness: Brightness.dark,
           textTheme: const TextTheme(
             bodyLarge:
-                TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
         themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
@@ -176,12 +176,12 @@ class _SplashScreenState extends State<SplashScreen>
                 width: double.infinity / 1.8,
                 fit: BoxFit.contain,
                 filterQuality: FilterQuality.high,
-              controller: _controller,
-              onLoaded: (composition){
-              _controller
-                  ..duration = Duration(seconds: 4)
-                  ..forward();
-              }
+                controller: _controller,
+                onLoaded: (composition){
+                  _controller
+                    ..duration = Duration(seconds: 4)
+                    ..forward();
+                }
             ),
           ),
           //App Name
@@ -217,10 +217,11 @@ class _HomePageState extends State<HomePage> {
   final String appLink =
       'https://drive.google.com/file/d/1I63mlCJFVk5A9ufeDQHWbilc08_J8e7o/view?usp=sharing';
   final List<String> images = [
-    'assets/au.jpg',
-    'assets/aditya.jpg',
-    'assets/2.jpeg',
-    'assets/3.jpeg',
+    'assets/1.jpg',
+    'assets/2.png',
+    'assets/3.jpg',
+    'assets/4.jpg',
+    'assets/5.jpg',
   ];
 
   @override
@@ -234,178 +235,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    //askNotificationPermission();
     final themeProvider = Provider.of<ThemeProvider>(context);
     final currentIndexProvider = Provider.of<CurrentIndexProvider>(context,listen: false);
     final brightness = Theme.of(context).brightness;
     final isDarkMode = brightness == Brightness.dark;
     return Scaffold(
+      backgroundColor: isDarkMode? Colors.black:Colors.white,
       key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(MediaQuery.of(context).size.height),
-        child: Stack(
-          children: [
-            // AppBar background (Gradient colors)
-            Container(
-              height: 270,
-              width: double.infinity,
-              //margin: EdgeInsets.only(left: 5, right: 5, top: 5),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isDarkMode == false
-                      ? [
-                          Colors.orange,
-                          const Color.fromARGB(255, 255, 119, 110)
-                        ]
-                      : [const Color.fromRGBO(83, 215, 238, 1), Colors.black],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10)),
-              ),
-            ),
-            // AppBar content (Title and Help button)
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20, right: 20, top: 15),
-                child: AppBar(
-                  title: Text(
-                    LocalizationHelper.of(context).translate('maintitle'),
-                    textScaler: const TextScaler.linear(1),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  leading: GestureDetector(
-                    onTap: () {
-                      _scaffoldKey.currentState
-                          ?.openDrawer(); // Open the drawer on tap
-                    },
-                    child: Container(
-                      height: 60,
-                      width: 60,
-                      margin: const EdgeInsets.all(8), // Add margin for spacing
-                      decoration: const BoxDecoration(
-                        color: Colors.white, // Background color for the icon
-                        shape: BoxShape.circle, // Circular shape
-                      ),
-                      child: const Icon(
-                        Icons.menu, // Menu icon
-                        color: Colors.black, // Icon color
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  centerTitle: true,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  actions: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.info_outline_rounded,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: () {
-                        // Add help action here
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return PopupPage();
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Image carousel section
-            Positioned(
-              top: 120,
-              left: 20,
-              right: 20,
-              child: Column(
-                children: [
-                  Container(
-                    height: 230,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color:
-                              isDarkMode ? Colors.transparent : Colors.white),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      clipBehavior: Clip.antiAliasWithSaveLayer,
-                      child: CarouselSlider.builder(
-                        itemCount: images.length,
-                        itemBuilder: (context, index, realIndex) {
-                          return Image.asset(
-                            images[index],
-                            fit: BoxFit
-                                .fill, // Ensures the image covers the container
-                            width: double.infinity,
-                          );
-                        },
-                        options: CarouselOptions(
-                          height: 230,
-                          autoPlay: true,
-                          autoPlayInterval: const Duration(seconds: 10),
-                          onPageChanged: (index, reason) {
-                            currentIndexProvider.setCurrentIndex(index);
-                          },
-                          viewportFraction: 1.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  AnimatedSmoothIndicator(
-                    activeIndex: currentIndexProvider.currentIndex,
-                    count: images.length,
-                    effect: ExpandingDotsEffect(
-                      dotHeight: 8,
-                      dotWidth: 8,
-                      activeDotColor: isDarkMode
-                          ? const Color.fromRGBO(83, 215, 238, 1)
-                          : Colors.orange,
-                      dotColor: const Color.fromARGB(255, 193, 186, 186),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Menu buttons positioned below the slideshow
-            Positioned(
-              top: 390, // Adjust this position to fit below the slideshow
-              left: 20,
-              right: 20,
-              child: Column(
-                children: [
-                  buildMenuButton(
-                    context,
-                    LocalizationHelper.of(context).translate('admin'),
-                    Icons.admin_panel_settings_outlined,
-                    const AdminAuthState(),
-                  ),
-                  const SizedBox(height: 20),
-                  buildMenuButton(
-                    context,
-                    LocalizationHelper.of(context).translate('driver'),
-                    Icons.directions_bus_sharp,
-                    const DriverAuthState(),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
       drawer: Drawer(
         backgroundColor: isDarkMode ? Colors.black : Colors.white,
         child: ListView(
@@ -419,9 +255,9 @@ class _HomePageState extends State<HomePage> {
                   colors: isDarkMode
                       ? [const Color.fromRGBO(83, 215, 238, 1), Colors.black]
                       : [
-                          Colors.orange,
-                          const Color.fromARGB(255, 255, 119, 110)
-                        ],
+                    Colors.orange,
+                    const Color.fromARGB(255, 255, 119, 110)
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -486,7 +322,7 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.share),
               title:
-                  Text(LocalizationHelper.of(context).translate('share_app')),
+              Text(LocalizationHelper.of(context).translate('share_app')),
               onTap: () {
                 Share.share('Check out my app: $appLink',
                     subject: 'My Awesome App');
@@ -525,7 +361,7 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.color_lens),
               title:
-                  Text(LocalizationHelper.of(context).translate('appearance')),
+              Text(LocalizationHelper.of(context).translate('appearance')),
               trailing: Transform.scale(
                 scale: 0.7,
                 child: Switch(
@@ -545,6 +381,147 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+      body:  SingleChildScrollView(
+        child: Container(
+          width: double.infinity,
+          //margin: EdgeInsets.only(left: 5, right: 5, top: 5),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDarkMode == false
+                  ? [
+                Colors.orange,
+                const Color.fromARGB(255, 255, 119, 110),
+                Colors.white,
+                Colors.white,
+                Colors.white
+              ]
+                  : [const Color.fromRGBO(83, 215, 238, 1), Colors.black, Colors.black, Colors.black],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(10),
+                bottomRight: Radius.circular(10)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              children:  [
+                // AppBar content (Title and Help button)
+                AppBar(
+                  title: Text(
+                    LocalizationHelper.of(context).translate('maintitle'),
+                    textScaler: const TextScaler.linear(1),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  leading: GestureDetector(
+                    onTap: () {
+                      _scaffoldKey.currentState
+                          ?.openDrawer(); // Open the drawer on tap
+                    },
+                    child: Container(
+                      height: 60,
+                      width: 60,
+                      margin: const EdgeInsets.all(8), // Add margin for spacing
+                      decoration: const BoxDecoration(
+                        color: Colors.white, // Background color for the icon
+                        shape: BoxShape.circle, // Circular shape
+                      ),
+                      child: const Icon(
+                        Icons.menu, // Menu icon
+                        color: Colors.black, // Icon color
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  centerTitle: true,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.info_outline_rounded,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        // Add help action here
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return PopupPage();
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: 30,),
+                // Image carousel section
+                AspectRatio(
+                  aspectRatio: 16/9,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    clipBehavior: Clip.antiAliasWithSaveLayer,
+                    child: CarouselSlider.builder(
+                      itemCount: images.length,
+                      itemBuilder: (context, index, realIndex) {
+                        return Image.asset(
+                          images[index],
+                          // fit: BoxFit
+                          //     .fill, // Ensures the image covers the container
+                          width: double.infinity,
+                        );
+                      },
+                      options: CarouselOptions(
+                        height: 230,
+                        autoPlay: true,
+                        enlargeCenterPage: true,
+                        autoPlayInterval: const Duration(seconds: 5),
+                        onPageChanged: (index, reason) {
+                          currentIndexProvider.setCurrentIndex(index);
+                        },
+                        viewportFraction: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 25),
+                AnimatedSmoothIndicator(
+                  activeIndex: Provider.of<CurrentIndexProvider>(context,listen: true).currentIndex,
+                  count: images.length,
+                  effect: ExpandingDotsEffect(
+                    dotHeight: 8,
+                    dotWidth: 8,
+                    activeDotColor: isDarkMode
+                        ? const Color.fromRGBO(83, 215, 238, 1)
+                        : Colors.orange,
+                    dotColor: const Color.fromARGB(255, 193, 186, 186),
+                  ),
+                ),
+                SizedBox(height: 20,),
+                buildMenuButton(
+                  context,
+                  LocalizationHelper.of(context).translate('admin'),
+                  Icons.admin_panel_settings_outlined,
+                  const AdminAuthState(),
+                ),
+                const SizedBox(height: 20),
+                buildMenuButton(
+                  context,
+                  LocalizationHelper.of(context).translate('driver'),
+                  Icons.car_repair_rounded,
+                  const DriverAuthState(),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -555,7 +532,7 @@ class _HomePageState extends State<HomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title:
-              Text(LocalizationHelper.of(context).translate('choose_language')),
+          Text(LocalizationHelper.of(context).translate('choose_language')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -637,7 +614,7 @@ class _HomePageState extends State<HomePage> {
                       color: const Color.fromARGB(255, 23, 72, 112),
                       borderRadius: BorderRadius.circular(30),
                       border:
-                          Border.all(color: const Color.fromARGB(110, 0, 0, 0)),
+                      Border.all(color: const Color.fromARGB(110, 0, 0, 0)),
                     ),
                     child: Icon(icon, size: 30, color: Colors.white),
                   ),
@@ -740,7 +717,7 @@ class _HomePageState extends State<HomePage> {
             maxLines: 4,
             decoration: InputDecoration(
               hintText:
-                  '${LocalizationHelper.of(context).translate('report')}...',
+              '${LocalizationHelper.of(context).translate('report')}...',
               border: const OutlineInputBorder(),
             ),
           ),
@@ -782,7 +759,7 @@ class _HomePageState extends State<HomePage> {
             maxLines: 4,
             decoration: InputDecoration(
               hintText:
-                  '${LocalizationHelper.of(context).translate('suggest_feature')}...',
+              '${LocalizationHelper.of(context).translate('suggest_feature')}...',
               border: const OutlineInputBorder(),
             ),
           ),
@@ -855,7 +832,7 @@ class PopupPage extends StatelessWidget {
                   width: 15,
                 ),
                 Text(
-                   LocalizationHelper.of(context).translate('devby'),
+                  LocalizationHelper.of(context).translate('devby'),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

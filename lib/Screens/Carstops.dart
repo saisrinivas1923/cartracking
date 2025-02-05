@@ -249,7 +249,7 @@ class AdminCarMapPage extends StatelessWidget {
             "${LocalizationHelper.of(context).translate('cl')}: $carNumber",
             textScaler: const TextScaler.linear(1),
             style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold),
+                 fontWeight: FontWeight.bold),
           ),
         ),
         body: Stack(

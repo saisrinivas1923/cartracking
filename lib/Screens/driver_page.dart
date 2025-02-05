@@ -262,7 +262,7 @@ class _DriverPageState extends State<DriverPage> {
                             options: CarouselOptions(
                               height: 230,
                               autoPlay: true,
-                              autoPlayInterval: const Duration(seconds: 10),
+                              autoPlayInterval: const Duration(seconds: 5),
                               onPageChanged: (index, reason) {
                                 currentIndexProvider.setCurrentIndex(index);
                               },

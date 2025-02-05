@@ -175,235 +175,250 @@ class _DriverDashboardState extends State<DriverDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final isDarkMode = brightness == Brightness.dark;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          LocalizationHelper.of(context).translate('driverdashboard'),
-          textScaler: TextScaler.linear(1),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sim_card_download_outlined), // PDF Icon
-            onPressed: generatePdf,  // Trigger your generatePdf function here
+      backgroundColor: isDarkMode? Colors.black:Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(100),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDarkMode == false
+                  ? [Colors.orange, Color.fromARGB(255, 255, 119, 110)]
+                  : [Color.fromRGBO(83, 215, 238, 1), Colors.black],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
           ),
-          SizedBox(width: 10),  // Optional space between the icon and the edge
-        ],
-        centerTitle: true,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 15),
+              child: AppBar(
+                title: Text(
+                  LocalizationHelper.of(context).translate('driverdashboard'),
+                  textScaler: TextScaler.linear(1),
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.sim_card_download_outlined), // PDF Icon
+                    onPressed: generatePdf,  // Trigger your generatePdf function here
+                  ),
+                  SizedBox(width: 10),  // Optional space between the icon and the edge
+                ],
+                leading: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.only(left: 10),
+                    margin: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white,
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+                centerTitle: true,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+              ),
+            ),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8,horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Profile Picture Avatar
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.blue.shade200,
-                    child: Icon(Icons.person, size: 50, color: Colors.white),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Car Number
-                  Text(
-                    "Car Name: ${widget.carDetails[0].isNotEmpty ? widget.carDetails[0].toUpperCase() : 'Not Added'}",
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildProfileRow(
-                      Icons.directions_car, "License Plate", widget.driverId),
-                  // Profile Details
-                  _buildProfileRow(Icons.badge, "Emp ID", widget.carDetails[1]),
-                  _buildProfileRow(Icons.person, "Name", widget.carDetails[2]),
-                  _buildProfileRow(Icons.phone, "Mobile", widget.carDetails[3]),
-                ],
-              ),
-            ),
-            // Distance info
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Total Distance Card
-                  Expanded(
-                    child: Card(
-                      color: Colors.blue.shade100,
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.directions_car, color: Colors.blue, size: 30),
-                            SizedBox(width: 10),
-                            Expanded( // Ensures text doesn't overflow
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Total Distance",
-                                    style: TextStyle(
-                                      fontSize: 14, // Slightly smaller for better fit
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue.shade700,
-                                    ),
-                                    overflow: TextOverflow.ellipsis, // Prevents overflow
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    "${totalDistance.toStringAsFixed(2)} km",
-                                    style: TextStyle(
-                                      fontSize: 16, // Keep readable but not too large
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue.shade900,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Profile Picture Avatar
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.grey.shade200,
+                      child: Icon(Icons.person, size: 50, color: Colors.black),
                     ),
-                  ),
-
-                  SizedBox(width: 8), // Small spacing between cards
-
-                  // Distance Today Card
-                  Expanded(
-                    child: Card(
-                      color: Colors.green.shade100,
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.today, color: Colors.green, size: 30),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Distance Today",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green.shade700,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    "${dailyDistance.toStringAsFixed(2)} km",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green.shade900,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    const SizedBox(height: 20),
+          
+                    // Car Number
+                    Text(
+                      "Car Name: ${widget.carDetails[0].isNotEmpty ? widget.carDetails[0].toUpperCase() : 'Not Added'}",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    _buildProfileRow(
+                        Icons.directions_car, "License Plate", widget.driverId),
+                    // Profile Details
+                    _buildProfileRow(Icons.badge, "Emp ID", widget.carDetails[1]),
+                    _buildProfileRow(Icons.person, "Name", widget.carDetails[2]),
+                    _buildProfileRow(Icons.phone, "Mobile", widget.carDetails[3]),
+                  ],
+                ),
               ),
-            ),
-
-            // Location History
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(
-                "Location History",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              // Distance info
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // children: [
+                  //   // Total Distance Card
+                  //   Expanded(
+                  //     child: Card(
+                  //       color: Colors.blue.shade100,
+                  //       elevation: 5,
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(10),
+                  //       ),
+                  //       child: Padding(
+                  //         padding: const EdgeInsets.all(16.0),
+                  //         child: Row(
+                  //           children: [
+                  //             Icon(Icons.directions_car, color: Colors.blue, size: 30),
+                  //             SizedBox(width: 10),
+                  //             Expanded( // Ensures text doesn't overflow
+                  //               child: Column(
+                  //                 crossAxisAlignment: CrossAxisAlignment.start,
+                  //                 children: [
+                  //                   Text(
+                  //                     "Total Distance",
+                  //                     style: TextStyle(
+                  //                       fontSize: 14, // Slightly smaller for better fit
+                  //                       fontWeight: FontWeight.bold,
+                  //                       color: Colors.blue.shade700,
+                  //                     ),
+                  //                     overflow: TextOverflow.ellipsis, // Prevents overflow
+                  //                   ),
+                  //                   SizedBox(height: 5),
+                  //                   Text(
+                  //                     "${totalDistance.toStringAsFixed(2)} km",
+                  //                     style: TextStyle(
+                  //                       fontSize: 16, // Keep readable but not too large
+                  //                       fontWeight: FontWeight.bold,
+                  //                       color: Colors.blue.shade900,
+                  //                     ),
+                  //                   ),
+                  //                 ],
+                  //               ),
+                  //             ),
+                  //           ],
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  //
+                  //   SizedBox(width: 8), // Small spacing between cards
+                  //
+                  //   // Distance Today Card
+                  //   Expanded(
+                  //     child: Card(
+                  //       color: Colors.green.shade100,
+                  //       elevation: 5,
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(10),
+                  //       ),
+                  //       child: Padding(
+                  //         padding: const EdgeInsets.all(16.0),
+                  //         child: Row(
+                  //           children: [
+                  //             Icon(Icons.today, color: Colors.green, size: 30),
+                  //             SizedBox(width: 10),
+                  //             Expanded(
+                  //               child: Column(
+                  //                 crossAxisAlignment: CrossAxisAlignment.start,
+                  //                 children: [
+                  //                   Text(
+                  //                     "Distance Today",
+                  //                     style: TextStyle(
+                  //                       fontSize: 14,
+                  //                       fontWeight: FontWeight.bold,
+                  //                       color: Colors.green.shade700,
+                  //                     ),
+                  //                     overflow: TextOverflow.ellipsis,
+                  //                   ),
+                  //                   SizedBox(height: 5),
+                  //                   Text(
+                  //                     "${dailyDistance.toStringAsFixed(2)} km",
+                  //                     style: TextStyle(
+                  //                       fontSize: 16,
+                  //                       fontWeight: FontWeight.bold,
+                  //                       color: Colors.green.shade900,
+                  //                     ),
+                  //                   ),
+                  //                 ],
+                  //               ),
+                  //             ),
+                  //           ],
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ],
+                ),
               ),
-            ),
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : errorMessage.isNotEmpty
-                      ? Center(
-                          child: Text(errorMessage,
-                              style: const TextStyle(color: Colors.red)))
-                      : driverData.isEmpty
-                          ? const Center(child: Text("No locations available"))
-                          : ListView.builder(
-                              itemCount: driverData['Date']?.length ?? 0,
-                              itemBuilder: (context, index) {
-                                final dateKey =
-                                    driverData['Date']?.keys.toList()[index];
-                                final places = driverData['Date']?[dateKey]
-                                    ['places'] as List;
-
-                                return Card(
-                                  margin: const EdgeInsets.all(8),
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.light ? Colors.orange : 
-                                      const Color.fromARGB(255, 110, 109, 109),
-                                  child: ListTile(
-                                    title: Text(dateKey ?? "Unknown Date"),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: places.map((place) {
-                                        return Column(
-                                          children: [
-                                            Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Icon(Icons.location_pin),
-                                                SizedBox(
-                                                    width: MediaQuery.sizeOf(
-                                                                context)
-                                                            .width *
-                                                        0.75,
-                                                    child: Text(
-                                                      "  ${place['placeName']}",
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    )),
-                                              ],
-                                            ),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.access_time),
-                                                Text(
-                                                  "  ${place['timestamp']}",
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ],
-                                            ),
-                                            Center(child: Text("||")),
-                                            Center(child: Text("V")),
-                                          ],
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-            ),
-          ],
+          
+              // Location History
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  "Location History",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Container(
+                height: MediaQuery.sizeOf(context).height*0.65,
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : errorMessage.isNotEmpty
+                        ? Center(
+                            child: Text("No Location History Found",
+                                style: TextStyle(fontSize: 18),
+                                textScaler: TextScaler.linear(1),))
+                        : driverData.isEmpty
+                            ? const Center(child: Text("No locations available"))
+                            : ListView.builder(
+                  itemCount: driverData['Date']?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    final dateKey = driverData['Date']?.keys.toList()[index];
+                    final places = driverData['Date']?[dateKey]['places'] as List;
+          
+                    return Card(
+                      margin: const EdgeInsets.all(8),
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Colors.orange
+                          : const Color.fromARGB(255, 110, 109, 109),
+                      child: ExpansionTile(
+                        title: Text(dateKey ?? "Unknown Date"),
+                        children: places.map((place) {
+                          return ListTile(
+                            leading: const Icon(Icons.location_pin),
+                            title: Text(place['placeName'] ?? "Unknown Location"),
+                            subtitle: Text("Time: ${place['timestamp']}"),
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

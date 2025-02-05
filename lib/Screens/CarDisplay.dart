@@ -25,6 +25,7 @@ class _PlaceListPageState extends State<PlaceListPage>
   TextEditingController nameController = TextEditingController();
   TextEditingController mobController = TextEditingController();
   TextEditingController vechicleTypeController = TextEditingController();
+  Set<int> selectedCars = {};
 
   @override
   void initState() {
@@ -162,6 +163,14 @@ class _PlaceListPageState extends State<PlaceListPage>
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   actions: [
+                    selectedCars.isNotEmpty?
+                  IconButton(
+                  icon: Icon(Icons.delete),
+                    onPressed: () {
+                      // Handle bulk delete
+                      _deleteSelectedCars();
+                    },
+                  ):
                     IconButton(
                       icon: const Icon(
                         Icons.location_on,
@@ -230,7 +239,7 @@ class _PlaceListPageState extends State<PlaceListPage>
                     ),
                   )
                 : Padding(
-                    padding: const EdgeInsets.all(5.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: ListView.builder(
                       itemCount: carProvider.cars.length,
                       itemBuilder: (context, index) {
@@ -239,14 +248,36 @@ class _PlaceListPageState extends State<PlaceListPage>
                         final carKey = carProvider.carsdetails[index];
                         final carDetails = carProvider.allList[carKey];
                         return GestureDetector(
+                          onLongPress: () {
+                            // Toggle selection on long press
+                            setState(() {
+                              if (selectedCars.contains(index)) {
+                                selectedCars.remove(index);
+                              } else {
+                                selectedCars.add(index);
+                              }
+                            });
+                          },
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    CarManageStopsScreen(car: CarNumber),
-                              ),
-                            );
+                            if (selectedCars.isEmpty) {
+                              // Navigate to CarManageStopsScreen for non-selected items
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      CarManageStopsScreen(car: CarNumber),
+                                ),
+                              );
+                            } else {
+                              // Toggle selection on tap if it's in selection mode
+                              setState(() {
+                                if (selectedCars.contains(index)) {
+                                  selectedCars.remove(index);
+                                } else {
+                                  selectedCars.add(index);
+                                }
+                              });
+                            }
                           },
                           child: Card(
                             color: isDarkMode ? Colors.black87 : null,
@@ -281,42 +312,32 @@ class _PlaceListPageState extends State<PlaceListPage>
                                       : Colors.black87,
                                 ),
                               ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.menu_book,
-                                      color: isDarkMode
-                                          ? Colors.redAccent
-                                          : Colors.blueGrey,
+                              trailing:  selectedCars.contains(index)
+                                  ? Icon(
+                                Icons.check_circle,
+                                color: isDarkMode ? Colors.green : Colors.blue,
+                              )
+                                  :  GestureDetector(
+                                onTap: (){
+                                  List<String> list1 = List<String>.from(carDetails);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DriverDashboard(
+                                        driverId: carKey.toString(),
+                                        carDetails: list1,
+                                      ),
                                     ),
-                                    onPressed: () {
-                                      List<String> list1 = List<String>.from(carDetails);
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => DriverDashboard(
-                                            driverId: carKey.toString(),
-                                            carDetails: list1,
-                                          ),
-                                        ),
-                                      );
-                                    },
+                                  );
+                                },
+                                    child: Icon(
+                                        Icons.menu_book,
+                                        color: isDarkMode
+                                            ? Colors.blueAccent
+                                            : Colors.blueGrey,
+                                      ),
                                   ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.delete,
-                                      color: isDarkMode
-                                          ? Colors.redAccent
-                                          : Colors.blueGrey,
-                                    ),
-                                    onPressed: () {
-                                      _deleteCar(CarNumber);
-                                    },
-                                  ),
-                                ],
-                              ),
+
                             ),
                           ),
                         );
@@ -351,6 +372,17 @@ class _PlaceListPageState extends State<PlaceListPage>
           ),
         ),
       );
+    });
+  }
+
+  void _deleteSelectedCars() {
+    // Handle the bulk deletion of selected cars
+    for (int index in selectedCars) {
+      final carNumber = Provider.of<CarProvider>(context,listen: false).cars[index];
+      _deleteCar(carNumber);
+    }
+    setState(() {
+      selectedCars.clear();
     });
   }
 
