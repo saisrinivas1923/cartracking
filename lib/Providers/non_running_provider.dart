@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import '../Services/NonRunningApiService.dart';
-import '../Services/authState.dart';
+import '../services/export_services.dart';
 
 class NonRunningProvider {
   final NonRunningApiService _apiService = NonRunningApiService();

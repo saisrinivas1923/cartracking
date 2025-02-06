@@ -4,8 +4,9 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:http/http.dart' as http;
-import '../Services/localization_helper.dart';
-import '../Constants/urls.dart';
+
+import '../services/export_services.dart';
+import '../constants/export_constants.dart';
 
 class DriverDashboard extends StatefulWidget {
   final String driverId;
@@ -46,14 +47,14 @@ class _DriverDashboardState extends State<DriverDashboard> {
 
         setState(() {
           driverData = data; // Store the entire response data
-          totalDistance = data['totalDistance'].toDouble();
-          totalDistance/=1000;
+          // totalDistance = data['totalDistance'].toDouble();
+          // totalDistance/=1000;
           // Calculate the distance for the current day (today)
-          final todayDate = DateTime.now().toString().split(' ')[0];
-          if (data['Date'][todayDate] != null) {
-            dailyDistance = data['Date'][todayDate]['totalDistance'].toDouble();
-          }
-          dailyDistance/=1000;
+          // final todayDate = DateTime.now().toString().split(' ')[0];
+          // if (data['Date'][todayDate] != null) {
+          //   dailyDistance = data['Date'][todayDate]['totalDistance'].toDouble();
+          // }
+          // dailyDistance/=1000;
           isLoading = false;
         });
       } else {
@@ -160,7 +161,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
           pw.Padding(
             padding: pw.EdgeInsets.only(bottom: 10),
             child: pw.Text(
-              "Location: ${place['placeName']} - Time: ${place['timestamp']}",
+              "Location: ${place['placeName']} - Time: ${place['time']}",
               style: pw.TextStyle(fontSize: 14),
             ),
           ),
@@ -409,7 +410,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                           return ListTile(
                             leading: const Icon(Icons.location_pin),
                             title: Text(place['placeName'] ?? "Unknown Location"),
-                            subtitle: Text("Time: ${place['timestamp']}"),
+                            subtitle: Text("Time: ${place['time']}"),
                           );
                         }).toList(),
                       ),

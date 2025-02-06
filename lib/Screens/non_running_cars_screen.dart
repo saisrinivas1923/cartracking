@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../Providers/NonRunningProvider.dart';
-import '../Services/localization_helper.dart';
+
+import '../services/export_services.dart';
+import '../providers/export_providers.dart';
 
 class NonRunningcarspage extends StatefulWidget {
   final List<String> allCars;

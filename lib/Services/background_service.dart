@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'dart:ui';
 import 'dart:async';
 import 'dart:convert';
@@ -8,9 +10,9 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 
-import '../Constants/urls.dart';
-import '../Providers/CarLocationProvider.dart';
-import '../Services/authState.dart';
+import '../services/export_services.dart';
+import '../providers/export_providers.dart';
+import '../constants/export_constants.dart';
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
@@ -148,7 +150,7 @@ void onStart(ServiceInstance service) async {
             position.latitude,
             position.longitude,
           );
-          totalDistanceTraveled = distanceInMeters/1000;
+          totalDistanceTraveled = distanceInMeters;
         }
         // Update previous position
         previousPosition = position;
@@ -178,7 +180,9 @@ void onStart(ServiceInstance service) async {
         try {
           final carno = (await BusnoTokenStorage.getToken())!;
           if (carno == null) return;
-          debugPrint(carno);
+          final String date = DateTime.now().toUtc().toIso8601String().split('T')[0];
+          final time = DateFormat('HH:mm:ss').format(DateTime.now());
+          debugPrint('$carno, $date, $time');
           final response = await http.post(
             Uri.parse('$localapi/save-location'),
             headers: {"Content-Type": "application/json"},
@@ -187,7 +191,8 @@ void onStart(ServiceInstance service) async {
               "latitude": position.latitude,
               "longitude": position.longitude,
               "distance": totalDistanceTraveled,
-              "time":DateFormat('HH:mm:ss').format(DateTime.now()),
+              "time": time,
+              "date": date,
             }),
           );
 

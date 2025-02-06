@@ -1,13 +1,13 @@
+import 'dart:convert';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../Screens/CarDisplay.dart';
-import '../Screens/nonrunningCarspage.dart';
-import '../Screens/runningCarspage.dart';
-import '../Services/authState.dart';
-import '../Providers/AdminDashboardProvider.dart';
-import '../Services/localization_helper.dart';
+import 'package:http/http.dart' as http;
+import '../constants/urls.dart';
+import '../services/export_services.dart';
+import '../providers/export_providers.dart';
+import '../screens/export_screens.dart';
 
 class Admindashboard extends StatefulWidget {
   const Admindashboard({super.key});
@@ -31,19 +31,21 @@ class _AdmindashboardState extends State<Admindashboard> {
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     final isDarkMode = brightness == Brightness.dark;
-      return RefreshIndicator(
-        onRefresh: () async {
-          debugPrint("Refresh started");
+    return RefreshIndicator(
+      onRefresh: () async {
+        debugPrint("Refresh started");
 
-          final token = await AdminTokenStorage.getToken();
+        final token = await AdminTokenStorage.getToken();
 
-          // Ensure the data fetching is awaited properly
-          await Provider.of<AdminDashboardProvider>(context, listen: false).fetchCarData();
-          await Provider.of<AdminDashboardProvider>(context, listen: false).fetchBusLocations(token!);
+        // Ensure the data fetching is awaited properly
+        await Provider.of<AdminDashboardProvider>(context, listen: false)
+            .fetchCarData();
+        await Provider.of<AdminDashboardProvider>(context, listen: false)
+            .fetchBusLocations(token!);
 
-          debugPrint("Refresh completed");
-        },
-        child: Scaffold(
+        debugPrint("Refresh completed");
+      },
+      child: Scaffold(
           backgroundColor: isDarkMode ? Colors.black : Colors.white,
           appBar: PreferredSize(
             preferredSize: const Size.fromHeight(100),
@@ -99,127 +101,131 @@ class _AdmindashboardState extends State<Admindashboard> {
               ),
             ),
           ),
-          body: Consumer<AdminDashboardProvider>(
-            builder: (context,provider,_){
-          final cars = provider.cars;
-          final _cars = provider.busLocations;
-          if(provider.isLoading || provider.isLoading1)
-          {return Center(
-          child: CircularProgressIndicator(
-          color: isDarkMode ? Colors.lightBlue : Colors.orange),
-          );}
-          return ListView(
-            physics: const AlwaysScrollableScrollPhysics(), // Ensures it can always scroll
-            padding: const EdgeInsets.only(top: 10),
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  // Pie Chart on the Left
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          height: 250,
-                          width: double.infinity,
-                          child: PieChart(
-                            PieChartData(
-                              sections: [
-                                PieChartSectionData(
-                                  color: Colors.green,
-                                  value: _cars.length.toDouble(),
-                                  title: '${(_cars.length).toString()}',
-                                  titleStyle: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
+          body:
+              Consumer<AdminDashboardProvider>(builder: (context, provider, _) {
+            final cars = provider.cars;
+            final _cars = provider.busLocations;
+            if (provider.isLoading || provider.isLoading1) {
+              return Center(
+                child: CircularProgressIndicator(
+                    color: isDarkMode ? Colors.lightBlue : Colors.orange),
+              );
+            }
+            return ListView(
+              physics:
+                  const AlwaysScrollableScrollPhysics(), // Ensures it can always scroll
+              padding: const EdgeInsets.only(top: 10),
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    // Pie Chart on the Left
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            height: 250,
+                            width: double.infinity,
+                            child: PieChart(
+                              PieChartData(
+                                sections: [
+                                  PieChartSectionData(
+                                    color: Colors.green,
+                                    value: _cars.length.toDouble(),
+                                    title: '${(_cars.length).toString()}',
+                                    titleStyle: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                ),
-                                PieChartSectionData(
-                                  color: Colors.red,
-                                  value: (cars.length - _cars.length).toDouble(),
-                                  title: '${(cars.length - _cars.length).toString()}',
-                                  titleStyle: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
+                                  PieChartSectionData(
+                                    color: Colors.red,
+                                    value:
+                                        (cars.length - _cars.length).toDouble(),
+                                    title:
+                                        '${(cars.length - _cars.length).toString()}',
+                                    titleStyle: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                ),
-                              ],
-                              sectionsSpace: 1,
-                              centerSpaceRadius: 40,
-                              borderData: FlBorderData(show: true),
+                                ],
+                                sectionsSpace: 1,
+                                centerSpaceRadius: 40,
+                                borderData: FlBorderData(show: true),
+                              ),
                             ),
                           ),
-                        ),
-                        Text(
-                          LocalizationHelper.of(context).translate('CarStatus'),
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                          Text(
+                            LocalizationHelper.of(context)
+                                .translate('CarStatus'),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  // Indicators on the Right
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Indicator(
-                          color: Colors.green,
-                          text: LocalizationHelper.of(context).translate('Running'),
-                        ),
-                        const SizedBox(height: 10),
-                        Indicator(
-                          color: Colors.red,
-                          text: LocalizationHelper.of(context).translate('NotRunning'),
-                        ),
-                      ],
+                    // Indicators on the Right
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Indicator(
+                            color: Colors.green,
+                            text: LocalizationHelper.of(context)
+                                .translate('Running'),
+                          ),
+                          const SizedBox(height: 10),
+                          Indicator(
+                            color: Colors.red,
+                            text: LocalizationHelper.of(context)
+                                .translate('NotRunning'),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              buildMenuButton(
-                context,
-                LocalizationHelper.of(context).translate('AllCars'),
-                Icons.admin_panel_settings_outlined,
-                const PlaceListPage(),
-                cars.length,
-                1,
-                0,
-              ),
-              const SizedBox(height: 20),
-              buildMenuButton(
-                context,
-                LocalizationHelper.of(context).translate('Running'),
-                Icons.directions_bus_sharp,
-                const Runningcarspage(),
-                _cars.length,
-                _cars.length / cars.length,
-                0,
-              ),
-              const SizedBox(height: 20),
-              buildMenuButton(
-                context,
-                LocalizationHelper.of(context).translate('NotRunning'),
-                Icons.directions_bus_sharp,
-                NonRunningcarspage(allCars: provider.carList.keys.toList()),
-                cars.length - _cars.length,
-                (cars.length - _cars.length) / cars.length,
-                1,
-              ),
-            ],
-          );}
-          )
-
-
-        ),
-      );
-
+                  ],
+                ),
+                const SizedBox(height: 20),
+                buildMenuButton(
+                  context,
+                  LocalizationHelper.of(context).translate('AllCars'),
+                  Icons.admin_panel_settings_outlined,
+                  const PlaceListPage(),
+                  cars.length,
+                  1,
+                  0,
+                ),
+                const SizedBox(height: 20),
+                buildMenuButton(
+                  context,
+                  LocalizationHelper.of(context).translate('Running'),
+                  Icons.directions_bus_sharp,
+                  const Runningcarspage(),
+                  _cars.length,
+                  _cars.length / cars.length,
+                  0,
+                ),
+                const SizedBox(height: 20),
+                buildMenuButton(
+                  context,
+                  LocalizationHelper.of(context).translate('NotRunning'),
+                  Icons.directions_bus_sharp,
+                  NonRunningcarspage(allCars: provider.carList.keys.toList()),
+                  cars.length - _cars.length,
+                  (cars.length - _cars.length) / cars.length,
+                  1,
+                ),
+               ],
+            );
+          })),
+    );
   }
 
   Widget buildMenuButton(BuildContext context, String title, IconData icon,

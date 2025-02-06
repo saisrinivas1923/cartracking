@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../Services/CarStopsApiService.dart';
+import '../services/export_services.dart';
 
 class CarStopsProvider with ChangeNotifier {
   final CarStopsApiService _apiService = CarStopsApiService();

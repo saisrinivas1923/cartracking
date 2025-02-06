@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class AdminDashboardApiService {
-  final String apiBaseUrl;
+import '../constants/export_constants.dart';
 
-  AdminDashboardApiService({required this.apiBaseUrl});
+class AdminDashboardApiService {
+
+  AdminDashboardApiService();
 
   // Fetch car data
   Future<Map<String, dynamic>> fetchCarData() async {

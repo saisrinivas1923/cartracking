@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class AllCarsApiService {
-  final String baseUrl;
+import '../constants/export_constants.dart';
 
-  AllCarsApiService({required this.baseUrl});
+class AllCarsApiService {
+
+  AllCarsApiService();
 
   Future<Map<String, dynamic>> fetchCars(String token) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/get-cars'),
+      Uri.parse('$apiBaseUrl/get-cars'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({'token': token}),
     );
@@ -22,7 +23,7 @@ class AllCarsApiService {
 
    Future<Map<String, dynamic>> fetchAllData() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/all-data'),
+      Uri.parse('$apiBaseUrl/all-data'),
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -42,7 +43,7 @@ class AllCarsApiService {
     required String token,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/add-car'),
+      Uri.parse('$apiBaseUrl/add-car'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         'carNumber': carNumber,
@@ -61,7 +62,7 @@ class AllCarsApiService {
 
   Future<void> deleteCar(String carNumber, String token) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/remove-car'),
+      Uri.parse('$apiBaseUrl/remove-car'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({'carNumber': carNumber, 'token': token}),
     );

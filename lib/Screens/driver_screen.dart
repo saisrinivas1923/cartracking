@@ -8,12 +8,9 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import '../Providers/CommonProvider.dart';
-import '../Constants/widget.dart';
-import '../Providers/CarLocationProvider.dart';
-import '../Services/localization_helper.dart';
-import '../Constants/urls.dart';
-import '../Services/authState.dart';
+import '../services/export_services.dart';
+import '../providers/export_providers.dart';
+import '../constants/export_constants.dart';
 
 class DriverPage extends StatefulWidget {
   const DriverPage({super.key});

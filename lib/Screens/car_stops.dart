@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:provider/provider.dart';
 
-import '../Providers/CarLocationProvider.dart';
-import '../Providers/CarStopsProvider.dart';
-import '../Providers/CarsDetailsProvider.dart';
-import '../constants/widget.dart';
-import '../Services/localization_helper.dart';
+import '../services/export_services.dart';
+import '../providers/export_providers.dart';
+import '../constants/export_constants.dart';
 
 class CarManageStopsScreen extends StatelessWidget {
   final String car;
